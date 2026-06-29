@@ -4,7 +4,7 @@
 
 // ── 업적 목록 정의
 const ACHIEVEMENTS = [
-  // ── 돌봄 관련
+  // ── 돌봄
   {
     id:    "feed_first",
     icon:  "🥕",
@@ -82,7 +82,7 @@ const ACHIEVEMENTS = [
     cat:   "돌봄",
   },
 
-  // ── 성장 관련
+  // ── 성장
   {
     id:    "stage_teen",
     icon:  "🌱",
@@ -111,7 +111,7 @@ const ACHIEVEMENTS = [
     cat:   "성장",
   },
 
-  // ── 출석 관련
+  // ── 출석
   {
     id:    "attend_3",
     icon:  "📅",
@@ -149,7 +149,7 @@ const ACHIEVEMENTS = [
     cat:   "출석",
   },
 
-  // ── 캐시 관련
+  // ── 재산
   {
     id:    "cash_100",
     icon:  "💰",
@@ -178,7 +178,7 @@ const ACHIEVEMENTS = [
     cat:   "재산",
   },
 
-  // ── 미니게임 관련
+  // ── 게임
   {
     id:    "game_first",
     icon:  "🎮",
@@ -207,64 +207,63 @@ const ACHIEVEMENTS = [
     cat:   "게임",
   },
 
-  // ── 숨겨진 업적
+  // ── 비밀
   {
-    id:    "secret_health0",
-    icon:  "💀",
-    name:  "위험했어요...",
-    desc:  "건강이 0이 됐어요. 다음엔 더 잘 돌봐주세요!",
-    cond:  (s) => s.health <= 0,
-    cash:  5,
-    cat:   "비밀 🔒",
+    id:     "secret_health0",
+    icon:   "💀",
+    name:   "위험했어요...",
+    desc:   "건강이 0이 됐어요. 다음엔 더 잘 돌봐주세요!",
+    cond:   (s) => s.health <= 0,
+    cash:   5,
+    cat:    "비밀 🔒",
     secret: true,
   },
   {
-    id:    "secret_night",
-    icon:  "🌙",
-    name:  "밤샘 집사",
-    desc:  "밤 11시 이후에 접속했어요.",
-    cond:  () => new Date().getHours() >= 23,
-    cash:  10,
-    cat:   "비밀 🔒",
+    id:     "secret_night",
+    icon:   "🌙",
+    name:   "밤샘 집사",
+    desc:   "밤 11시 이후에 접속했어요.",
+    cond:   () => new Date().getHours() >= 23,
+    cash:   10,
+    cat:    "비밀 🔒",
     secret: true,
   },
   {
-    id:    "secret_morning",
-    icon:  "🌅",
-    name:  "새벽 집사",
-    desc:  "새벽 6시 이전에 접속했어요.",
-    cond:  () => new Date().getHours() < 6,
-    cash:  10,
-    cat:   "비밀 🔒",
+    id:     "secret_morning",
+    icon:   "🌅",
+    name:   "새벽 집사",
+    desc:   "새벽 6시 이전에 접속했어요.",
+    cond:   () => new Date().getHours() < 6,
+    cash:   10,
+    cat:    "비밀 🔒",
     secret: true,
   },
 ];
 
 // ── 카테고리 순서
-const ACH_CATS = ["돌봄", "성장", "출석", "재산", "게임", "비밀 🔒"];
+const ACH_CATS = ["전체", "돌봄", "성장", "출석", "재산", "게임", "비밀 🔒"];
+
+// 현재 선택된 카테고리
+let currentAchCat = "전체";
 
 // ════════════════════════════════════════
 //  업적 체크 & 지급
 // ════════════════════════════════════════
 
-/** 업적 달성 여부 확인 후 미달성 → 달성 처리 */
 function checkAchievements() {
   let newlyUnlocked = [];
 
   ACHIEVEMENTS.forEach((ach) => {
-    // 이미 달성했으면 스킵
     if (hamster.unlockedAch && hamster.unlockedAch.includes(ach.id)) return;
 
-    // 조건 체크
     let passed = false;
     try { passed = ach.cond(hamster); } catch { passed = false; }
     if (!passed) return;
 
-    // 달성 처리
     if (!hamster.unlockedAch) hamster.unlockedAch = [];
     hamster.unlockedAch.push(ach.id);
-    hamster.cash += ach.cash;
-    hamster.totalCashEarned = (hamster.totalCashEarned || 0) + ach.cash;
+    hamster.cash            += ach.cash;
+    hamster.totalCashEarned  = (hamster.totalCashEarned || 0) + ach.cash;
 
     newlyUnlocked.push(ach);
   });
@@ -273,14 +272,20 @@ function checkAchievements() {
     saveGame();
     updateCashDisplay();
     showAchievementToast(newlyUnlocked);
+
+    // 업적 탭이 열려 있으면 실시간 갱신
+    const achTab = document.getElementById("tab-achievement");
+    if (achTab && achTab.classList.contains("active")) {
+      renderAchievementPage();
+    }
   }
 }
 
 // ════════════════════════════════════════
-//  토스트 알림 (연달아 표시)
+//  🍞 토스트 알림
 // ════════════════════════════════════════
 
-let toastQueue = [];
+let toastQueue   = [];
 let toastShowing = false;
 
 function showAchievementToast(list) {
@@ -297,8 +302,8 @@ function processToastQueue() {
   const ach = toastQueue.shift();
 
   const toast = document.createElement("div");
-  toast.className   = "ach-toast";
-  toast.innerHTML   = `
+  toast.className = "ach-toast";
+  toast.innerHTML = `
     <span class="ach-toast-icon">${ach.icon}</span>
     <div class="ach-toast-body">
       <div class="ach-toast-title">🏆 업적 달성!</div>
@@ -309,11 +314,8 @@ function processToastQueue() {
   `;
 
   document.body.appendChild(toast);
-
-  // 슬라이드인
   requestAnimationFrame(() => toast.classList.add("show"));
 
-  // 3초 후 슬라이드아웃
   setTimeout(() => {
     toast.classList.remove("show");
     toast.classList.add("hide");
@@ -325,131 +327,151 @@ function processToastQueue() {
 }
 
 // ════════════════════════════════════════
-//  업적 목록 팝업
+//  🏆 업적 탭 페이지 렌더링
 // ════════════════════════════════════════
 
-function openAchievements() {
-  // 이미 열려 있으면 닫기
-  const existing = document.getElementById("ach-overlay");
-  if (existing) { existing.remove(); return; }
+function renderAchievementPage() {
+  renderAchProgressBar();
+  renderAchCatBar();
+  renderAchCards(currentAchCat);
+}
 
-  const overlay = document.createElement("div");
-  overlay.id    = "ach-overlay";
-
-  const panel = document.createElement("div");
-  panel.id    = "ach-panel";
-
-  // ── 헤더
-  const header = document.createElement("div");
-  header.id    = "ach-header";
-
-  const title = document.createElement("h2");
-  title.textContent = "🏆 업적";
-
-  const closeBtn = document.createElement("button");
-  closeBtn.id          = "ach-close";
-  closeBtn.textContent = "✕";
-  closeBtn.onclick     = () => overlay.remove();
-
-  header.append(title, closeBtn);
-
-  // ── 달성 현황 바
+// ── 달성 현황 바
+function renderAchProgressBar() {
   const total    = ACHIEVEMENTS.length;
   const unlocked = (hamster.unlockedAch || []).length;
-  const pct      = Math.round((unlocked / total) * 100);
+  const pct      = total > 0 ? Math.round((unlocked / total) * 100) : 0;
 
-  const progress = document.createElement("div");
-  progress.id = "ach-progress-wrap";
-  progress.innerHTML = `
-    <div id="ach-progress-label">
-      <span>${unlocked} / ${total} 달성</span>
-      <span>${pct}%</span>
-    </div>
-    <div id="ach-progress-track">
-      <div id="ach-progress-fill" style="width:${pct}%"></div>
-    </div>
-  `;
+  document.getElementById("ach-prog-count").textContent = `${unlocked} / ${total} 달성`;
+  document.getElementById("ach-prog-pct").textContent   = `${pct}%`;
+  document.getElementById("ach-progress-fill").style.width = `${pct}%`;
+}
 
-  // ── 탭 (카테고리)
-  const tabBar = document.createElement("div");
-  tabBar.id = "ach-tab-bar";
+// ── 카테고리 탭 바
+function renderAchCatBar() {
+  const bar = document.getElementById("ach-cat-bar");
+  bar.innerHTML = "";
 
-  const tabContent = document.createElement("div");
-  tabContent.id = "ach-tab-content";
+  ACH_CATS.forEach((cat) => {
+    const btn = document.createElement("button");
+    btn.className   = "ach-cat-btn";
+    btn.textContent = cat;
 
-  ACH_CATS.forEach((cat, i) => {
-    const tab = document.createElement("button");
-    tab.className   = "ach-tab";
-    tab.textContent = cat;
-    if (i === 0) tab.classList.add("active");
+    if (cat === currentAchCat) btn.classList.add("active");
 
-    tab.onclick = () => {
-      document.querySelectorAll(".ach-tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      renderCat(cat);
+    // 카테고리별 달성 수 뱃지
+    if (cat !== "전체") {
+      const list     = ACHIEVEMENTS.filter(a => a.cat === cat);
+      const doneNum  = list.filter(a => (hamster.unlockedAch || []).includes(a.id)).length;
+      const badge    = document.createElement("span");
+      badge.className   = "ach-cat-badge";
+      badge.textContent = `${doneNum}/${list.length}`;
+      btn.appendChild(badge);
+    } else {
+      const total    = ACHIEVEMENTS.length;
+      const unlocked = (hamster.unlockedAch || []).length;
+      const badge    = document.createElement("span");
+      badge.className   = "ach-cat-badge";
+      badge.textContent = `${unlocked}/${total}`;
+      btn.appendChild(badge);
+    }
+
+    btn.onclick = () => {
+      currentAchCat = cat;
+      renderAchCatBar();
+      renderAchCards(cat);
     };
 
-    tabBar.appendChild(tab);
+    bar.appendChild(btn);
+  });
+}
+
+// ── 업적 카드 목록
+function renderAchCards(cat) {
+  const list =
+    cat === "전체"
+      ? ACHIEVEMENTS
+      : ACHIEVEMENTS.filter(a => a.cat === cat);
+
+  const container = document.getElementById("ach-card-list");
+  container.innerHTML = "";
+
+  // 달성한 것 먼저, 미달성 나중
+  const sorted = [
+    ...list.filter(a => (hamster.unlockedAch || []).includes(a.id)),
+    ...list.filter(a => !(hamster.unlockedAch || []).includes(a.id)),
+  ];
+
+  sorted.forEach((ach) => {
+    const isDone   = (hamster.unlockedAch || []).includes(ach.id);
+    const isSecret = ach.secret && !isDone;
+
+    const card = document.createElement("div");
+    card.className = `ach-card${isDone ? " done" : ""}`;
+
+    // 아이콘
+    const iconEl = document.createElement("div");
+    iconEl.className   = "ach-card-icon";
+    iconEl.textContent = isSecret ? "❓" : ach.icon;
+
+    // 본문
+    const body = document.createElement("div");
+    body.className = "ach-card-body";
+
+    const nameEl = document.createElement("div");
+    nameEl.className   = "ach-card-name";
+    nameEl.textContent = isSecret ? "???" : ach.name;
+
+    const descEl = document.createElement("div");
+    descEl.className   = "ach-card-desc";
+    descEl.textContent = isSecret
+      ? "숨겨진 업적이에요. 직접 찾아보세요!"
+      : ach.desc;
+
+    const rewardEl = document.createElement("div");
+    rewardEl.className   = "ach-card-reward";
+    rewardEl.textContent = `💰 +${ach.cash}C`;
+
+    body.append(nameEl, descEl, rewardEl);
+
+    // 뱃지
+    const badgeEl = document.createElement("div");
+    badgeEl.className   = "ach-card-badge";
+    badgeEl.textContent = isDone ? "✅ 달성" : "🔒 미달성";
+
+    card.append(iconEl, body, badgeEl);
+    container.appendChild(card);
   });
 
-  function renderCat(cat) {
-    tabContent.innerHTML = "";
-    const list = ACHIEVEMENTS.filter(a => a.cat === cat);
-
-    list.forEach(ach => {
-      const isDone   = (hamster.unlockedAch || []).includes(ach.id);
-      const isSecret = ach.secret && !isDone;
-
-      const card = document.createElement("div");
-      card.className = `ach-card${isDone ? " done" : ""}`;
-
-      const icon = document.createElement("div");
-      icon.className   = "ach-card-icon";
-      icon.textContent = isSecret ? "❓" : ach.icon;
-
-      const body = document.createElement("div");
-      body.className = "ach-card-body";
-
-      const name = document.createElement("div");
-      name.className   = "ach-card-name";
-      name.textContent = isSecret ? "???" : ach.name;
-
-      const desc = document.createElement("div");
-      desc.className   = "ach-card-desc";
-      desc.textContent = isSecret ? "숨겨진 업적이에요. 직접 찾아보세요!" : ach.desc;
-
-      const reward = document.createElement("div");
-      reward.className   = "ach-card-reward";
-      reward.textContent = `💰 +${ach.cash}C`;
-
-      const badge = document.createElement("div");
-      badge.className   = "ach-card-badge";
-      badge.textContent = isDone ? "✅ 달성" : "🔒 미달성";
-
-      body.append(name, desc, reward);
-      card.append(icon, body, badge);
-      tabContent.appendChild(card);
-    });
+  // 비어있을 때
+  if (sorted.length === 0) {
+    const empty = document.createElement("div");
+    empty.className   = "ach-empty";
+    empty.textContent = "이 카테고리에 업적이 없어요!";
+    container.appendChild(empty);
   }
-
-  renderCat(ACH_CATS[0]);
-
-  panel.append(header, progress, tabBar, tabContent);
-  overlay.appendChild(panel);
-
-  // 오버레이 바깥 클릭 시 닫기
-  overlay.onclick = (e) => {
-    if (e.target === overlay) overlay.remove();
-  };
-
-  document.body.appendChild(overlay);
 }
 
 // ════════════════════════════════════════
-//  통계 카운터 헬퍼 (game.js에서 호출)
+//  통계 카운터 헬퍼
 // ════════════════════════════════════════
 
-function recordFeed()     { hamster.totalFeed     = (hamster.totalFeed     || 0) + 1; checkAchievements(); }
-function recordClean()    { hamster.totalClean    = (hamster.totalClean    || 0) + 1; checkAchievements(); }
-function recordMedicine() { hamster.totalMedicine = (hamster.totalMedicine || 0) + 1; checkAchievements(); }
-function recordGameWin()  { hamster.totalGameWins = (hamster.totalGameWins || 0) + 1; checkAchievements(); }
+function recordFeed() {
+  hamster.totalFeed = (hamster.totalFeed || 0) + 1;
+  checkAchievements();
+}
+
+function recordClean() {
+  hamster.totalClean = (hamster.totalClean || 0) + 1;
+  checkAchievements();
+}
+
+function recordMedicine() {
+  hamster.totalMedicine = (hamster.totalMedicine || 0) + 1;
+  checkAchievements();
+}
+
+function recordGameWin() {
+  hamster.totalGameWins = (hamster.totalGameWins || 0) + 1;
+  checkAchievements();
+}
