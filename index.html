@@ -12,124 +12,147 @@
        상단 캐시 바
   ══════════════════════════════ -->
   <div class="cash-bar">
-    <span>💰 캐시: <strong id="cash-display">0</strong>C</span>
+    <span>💰 <strong id="cash-display">0</strong>C</span>
+    <span class="game-title">🐹 뚜별 햄스터</span>
     <button class="icon-btn" onclick="openAchievements()">🏆 업적</button>
   </div>
 
   <!-- ══════════════════════════════
-       메인 게임 화면
+       메인 : 집 레이아웃
   ══════════════════════════════ -->
   <div id="game-screen">
 
-    <!-- 단계 / 이름 -->
-    <div id="stage-label">이름: 뚜스터 | 단계: 아기 🍼 | ⏰ 0분 경과</div>
-
-    <!-- 햄스터 이미지 -->
-    <div class="hamster-box">
-      <img id="hamster-img" src="images/happy.png" alt="햄스터" />
+    <!-- 지붕 -->
+    <div class="house-roof">
+      <div class="roof-triangle"></div>
+      <div class="roof-label" id="stage-label">아기 🍼</div>
     </div>
 
-    <!-- 상태 메시지 -->
-    <div id="state-msg">😊 뚜스터가 행복해요!</div>
+    <!-- 집 본체 -->
+    <div class="house-body">
 
-    <!-- 경고 메시지 -->
-    <div id="warn-msg"></div>
-
-    <!-- 액션 메시지 -->
-    <div id="action-msg"></div>
-
-    <!-- 스탯 바 -->
-    <div class="stat-list">
-
-      <div class="stat-row">
-        <span class="stat-label">🛁 청결</span>
-        <div class="bar-track">
-          <div class="bar-fill good" id="bar-cleanliness"></div>
+      <!-- 창문 : 햄스터 -->
+      <div class="house-window">
+        <div class="hamster-box">
+          <img id="hamster-img" src="images/happy.png" alt="햄스터" />
         </div>
-        <span class="stat-val" id="val-cleanliness">100%</span>
+        <div id="state-msg">😊 뚜스터가 행복해요!</div>
+        <div id="warn-msg"></div>
+        <div id="action-msg"></div>
       </div>
 
-      <div class="stat-row">
-        <span class="stat-label">😊 행복</span>
-        <div class="bar-track">
-          <div class="bar-fill good" id="bar-happiness"></div>
+      <!-- 스탯 판 -->
+      <div class="stat-board">
+        <div class="stat-row">
+          <span class="stat-label">🛁 청결</span>
+          <div class="bar-track">
+            <div class="bar-fill good" id="bar-cleanliness"></div>
+          </div>
+          <span class="stat-val" id="val-cleanliness">100%</span>
         </div>
-        <span class="stat-val" id="val-happiness">100%</span>
+        <div class="stat-row">
+          <span class="stat-label">😊 행복</span>
+          <div class="bar-track">
+            <div class="bar-fill good" id="bar-happiness"></div>
+          </div>
+          <span class="stat-val" id="val-happiness">100%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">🍽️ 포만</span>
+          <div class="bar-track">
+            <div class="bar-fill good" id="bar-hunger"></div>
+          </div>
+          <span class="stat-val" id="val-hunger">100%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">❤️ 건강</span>
+          <div class="bar-track">
+            <div class="bar-fill good" id="bar-health"></div>
+          </div>
+          <span class="stat-val" id="val-health">100%</span>
+        </div>
       </div>
 
-      <div class="stat-row">
-        <span class="stat-label">🍽️ 배고픔</span>
-        <div class="bar-track">
-          <div class="bar-fill good" id="bar-hunger"></div>
-        </div>
-        <span class="stat-val" id="val-hunger">100%</span>
+      <!-- 문 : 액션 버튼 -->
+      <div class="house-door-row">
+        <button class="door-btn" onclick="actionFeed()">
+          <span class="door-icon">🥕</span>
+          <span class="door-name">밥주기</span>
+          <span class="door-cost">10C</span>
+        </button>
+        <button class="door-btn" onclick="actionClean()">
+          <span class="door-icon">🛁</span>
+          <span class="door-name">씻기기</span>
+          <span class="door-cost">10C</span>
+        </button>
+        <button class="door-btn" onclick="actionMedicine()">
+          <span class="door-icon">💊</span>
+          <span class="door-name">약주기</span>
+          <span class="door-cost">20C</span>
+        </button>
+        <button class="door-btn highlight" onclick="openMinigameModal()">
+          <span class="door-icon">🎮</span>
+          <span class="door-name">미니게임</span>
+          <span class="door-cost">캐시 획득</span>
+        </button>
       </div>
 
-      <div class="stat-row">
-        <span class="stat-label">❤️ 건강</span>
-        <div class="bar-track">
-          <div class="bar-fill good" id="bar-health"></div>
-        </div>
-        <span class="stat-val" id="val-health">100%</span>
-      </div>
+    </div><!-- /.house-body -->
 
-    </div>
-
-    <!-- 액션 버튼 -->
-    <div class="action-btns">
-      <button class="action-btn" onclick="actionFeed()">
-        🥕 밥주기<br /><small>(${COSTS.feed}C)</small>
-      </button>
-      <button class="action-btn" onclick="actionClean()">
-        🛁 씻기기<br /><small>(${COSTS.clean}C)</small>
-      </button>
-      <button class="action-btn" onclick="actionMedicine()">
-        💊 약주기<br /><small>(${COSTS.medicine}C)</small>
-      </button>
-      <button class="action-btn" onclick="openMinigame()">
-        🎮 미니게임
-      </button>
+    <!-- 잔디 -->
+    <div class="house-ground">
+      <span>🌿</span><span>🌸</span><span>🌿</span>
+      <span>🌼</span><span>🌿</span><span>🌸</span><span>🌿</span>
     </div>
 
   </div><!-- /#game-screen -->
 
   <!-- ══════════════════════════════
-       미니게임 화면 (hidden)
+       미니게임 모달
   ══════════════════════════════ -->
-  <div id="minigame-screen" class="hidden">
+  <div id="mg-modal" class="modal-overlay hidden">
+    <div class="modal-card">
 
-    <!-- 게임 선택 -->
-    <div id="mg-select">
-      <h2>🎮 미니게임 선택</h2>
-      <p class="mg-sub">이겨서 캐시를 모아요!</p>
-      <div class="mg-game-list">
-        <button class="mg-game-btn" onclick="selectGame('guess')">
-          <span class="mg-game-icon">🔢</span>
-          <span class="mg-game-name">숫자 맞히기</span>
-          <span class="mg-game-desc">1~10 숫자를 맞혀요</span>
-        </button>
-        <button class="mg-game-btn" onclick="selectGame('rps')">
-          <span class="mg-game-icon">✂️</span>
-          <span class="mg-game-name">가위바위보</span>
-          <span class="mg-game-desc">햄스터와 대결!</span>
-        </button>
-        <button class="mg-game-btn" onclick="selectGame('memory')">
-          <span class="mg-game-icon">🧠</span>
-          <span class="mg-game-name">기억력 게임</span>
-          <span class="mg-game-desc">순서를 기억하세요</span>
-        </button>
+      <div class="modal-header">
+        <span class="modal-title">🎮 미니게임</span>
+        <button class="modal-close" onclick="closeMinigameModal()">✕</button>
       </div>
-      <button class="mg-back-btn" onclick="closeMinigame()">← 돌아가기</button>
+
+      <!-- 게임 선택 -->
+      <div id="mg-select">
+        <p class="mg-sub">이겨서 캐시를 모아요!</p>
+        <div class="mg-game-list">
+          <button class="mg-game-btn" onclick="selectGame('guess')">
+            <span class="mg-game-icon">🔢</span>
+            <div class="mg-game-info">
+              <span class="mg-game-name">숫자 맞히기</span>
+              <span class="mg-game-desc">1~10 숫자를 맞혀요 · +15C</span>
+            </div>
+          </button>
+          <button class="mg-game-btn" onclick="selectGame('rps')">
+            <span class="mg-game-icon">✂️</span>
+            <div class="mg-game-info">
+              <span class="mg-game-name">가위바위보</span>
+              <span class="mg-game-desc">햄스터와 대결! · +12C</span>
+            </div>
+          </button>
+          <button class="mg-game-btn" onclick="selectGame('memory')">
+            <span class="mg-game-icon">🧠</span>
+            <div class="mg-game-info">
+              <span class="mg-game-name">기억력 게임</span>
+              <span class="mg-game-desc">순서를 기억하세요 · +20C</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 게임 플레이 영역 -->
+      <div id="mg-play" class="hidden"></div>
+
     </div>
+  </div>
 
-    <!-- 게임 플레이 영역 -->
-    <div id="mg-play" class="hidden"></div>
-
-  </div><!-- /#minigame-screen -->
-
-  <!-- ══════════════════════════════
-       JS 로드 순서 중요!
-  ══════════════════════════════ -->
+  <!-- JS -->
   <script src="game.js"></script>
   <script src="achievement.js"></script>
   <script src="minigame.js"></script>
