@@ -8,181 +8,132 @@
 </head>
 <body>
 
-  <!-- ── 캐시 바 -->
+  <!-- ══════════════════════════════
+       상단 캐시 바
+  ══════════════════════════════ -->
   <div class="cash-bar">
-    <span>💰 캐시</span>
+    <span class="cash-label">💰 캐시</span>
     <span id="cash-display">0</span>
-    <span>C</span>
+    <span class="cash-unit">C</span>
   </div>
 
-  <!-- ══════════════════════════════════════
-       메인 탭 네비게이션
-  ══════════════════════════════════════ -->
-  <nav id="main-tab-bar">
-    <button class="main-tab active" data-tab="tab-home"       onclick="switchTab('tab-home')">
-      🏠 홈
-    </button>
-    <button class="main-tab"        data-tab="tab-minigame"   onclick="switchTab('tab-minigame')">
-      🎮 게임
-    </button>
-    <button class="main-tab"        data-tab="tab-achievement" onclick="switchTab('tab-achievement')">
-      🏆 업적
-    </button>
-  </nav>
+  <!-- ══════════════════════════════
+       메인 컨테이너
+  ══════════════════════════════ -->
+  <div class="container">
 
-  <!-- ══════════════════════════════════════
-       탭 1 : 홈
-  ══════════════════════════════════════ -->
-  <section id="tab-home" class="tab-section active">
-
-    <!-- 스테이지 정보 -->
-    <div id="stage-label">이름: 뚜스터 | 단계: 아기 🍼 | ⏰ 0분 경과</div>
+    <!-- 이름 / 단계 -->
+    <div id="stage-label" class="stage-label">로딩 중...</div>
 
     <!-- 햄스터 이미지 영역 -->
     <div class="hamster-box">
-      <img id="hamster-img" src="images/happy.png" alt="햄스터" />
-      <div id="state-msg">😊 뚜스터가 행복해요!</div>
+      <img id="hamster-img" src="images/normal.png" alt="햄스터" />
+      <div id="state-msg" class="state-msg"></div>
     </div>
 
     <!-- 경고 메시지 -->
-    <pre id="warn-msg" class="warn-msg"></pre>
+    <div id="warn-msg" class="warn-msg"></div>
 
     <!-- 스탯 바 -->
-    <div class="stat-wrap">
-
+    <div class="stats">
       <div class="stat-row">
         <span class="stat-label">🧼 청결</span>
         <div class="bar-track">
-          <div class="bar-fill good" id="bar-cleanliness"></div>
+          <div id="bar-cleanliness" class="bar-fill good"></div>
         </div>
-        <span class="stat-val" id="val-cleanliness">100%</span>
+        <span id="val-cleanliness" class="stat-val">100%</span>
       </div>
-
       <div class="stat-row">
         <span class="stat-label">😊 행복</span>
         <div class="bar-track">
-          <div class="bar-fill good" id="bar-happiness"></div>
+          <div id="bar-happiness" class="bar-fill good"></div>
         </div>
-        <span class="stat-val" id="val-happiness">100%</span>
+        <span id="val-happiness" class="stat-val">100%</span>
       </div>
-
       <div class="stat-row">
-        <span class="stat-label">🍽️ 배고픔</span>
+        <span class="stat-label">🍽️ 포만</span>
         <div class="bar-track">
-          <div class="bar-fill good" id="bar-hunger"></div>
+          <div id="bar-hunger" class="bar-fill good"></div>
         </div>
-        <span class="stat-val" id="val-hunger">100%</span>
+        <span id="val-hunger" class="stat-val">100%</span>
       </div>
-
       <div class="stat-row">
         <span class="stat-label">❤️ 건강</span>
         <div class="bar-track">
-          <div class="bar-fill good" id="bar-health"></div>
+          <div id="bar-health" class="bar-fill good"></div>
         </div>
-        <span class="stat-val" id="val-health">100%</span>
+        <span id="val-health" class="stat-val">100%</span>
       </div>
-
-    </div><!-- /stat-wrap -->
+    </div>
 
     <!-- 액션 메시지 -->
-    <div id="action-msg"></div>
+    <div id="action-msg" class="action-msg"></div>
 
     <!-- 액션 버튼 -->
-    <div class="action-wrap">
+    <div class="action-btns">
       <button class="action-btn" onclick="actionFeed()">
-        🥕 밥주기<br /><small>10C</small>
+        🥕 밥주기<br/><small>(-10C)</small>
       </button>
       <button class="action-btn" onclick="actionClean()">
-        🛁 씻기기<br /><small>10C</small>
+        🛁 씻기기<br/><small>(-10C)</small>
       </button>
       <button class="action-btn" onclick="actionMedicine()">
-        💊 약주기<br /><small>20C</small>
+        💊 약주기<br/><small>(-20C)</small>
+      </button>
+      <button class="action-btn" onclick="openMinigame()">
+        🎮 미니게임
+      </button>
+      <button class="action-btn" onclick="openAchievements()">
+        🏆 업적
       </button>
     </div>
 
-  </section><!-- /tab-home -->
+  </div><!-- /container -->
 
-  <!-- ══════════════════════════════════════
-       탭 2 : 미니게임
-  ══════════════════════════════════════ -->
-  <section id="tab-minigame" class="tab-section">
+  <!-- ══════════════════════════════
+       미니게임 화면 (기본 숨김)
+  ══════════════════════════════ -->
+  <div id="minigame-screen" class="hidden">
 
+    <!-- 미니게임 선택 화면 -->
     <div id="mg-select">
-      <h2 class="tab-section-title">🎮 미니게임</h2>
-      <p class="tab-section-sub">게임을 골라서 캐시를 모아보세요!</p>
+      <h2>🎮 미니게임 선택</h2>
+      <p class="mg-desc">게임에서 이기면 캐시를 얻어요!</p>
 
-      <div class="mg-card-list">
-
-        <div class="mg-card" onclick="startGame('number')">
-          <div class="mg-card-icon">🔢</div>
-          <div class="mg-card-body">
-            <div class="mg-card-name">숫자 맞히기</div>
-            <div class="mg-card-desc">1~10 사이 숫자를 맞혀요!</div>
-            <div class="mg-card-reward">최대 +20C</div>
-          </div>
-        </div>
-
-        <div class="mg-card" onclick="startGame('rps')">
-          <div class="mg-card-icon">✊</div>
-          <div class="mg-card-body">
-            <div class="mg-card-name">가위바위보</div>
-            <div class="mg-card-desc">뚜스터와 승부를 겨뤄요!</div>
-            <div class="mg-card-reward">최대 +15C</div>
-          </div>
-        </div>
-
-        <div class="mg-card" onclick="startGame('memory')">
-          <div class="mg-card-icon">🧠</div>
-          <div class="mg-card-body">
-            <div class="mg-card-name">기억력 게임</div>
-            <div class="mg-card-desc">순서를 기억하고 맞혀요!</div>
-            <div class="mg-card-reward">최대 +25C</div>
-          </div>
-        </div>
-
-      </div><!-- /mg-card-list -->
-    </div><!-- /mg-select -->
-
-    <!-- 게임 플레이 영역 -->
-    <div id="mg-play" class="hidden"></div>
-
-  </section><!-- /tab-minigame -->
-
-  <!-- ══════════════════════════════════════
-       탭 3 : 업적
-  ══════════════════════════════════════ -->
-  <section id="tab-achievement" class="tab-section">
-
-    <div id="ach-page">
-
-      <!-- 헤더 -->
-      <h2 class="tab-section-title">🏆 업적</h2>
-
-      <!-- 달성 현황 바 -->
-      <div id="ach-progress-wrap">
-        <div id="ach-progress-label">
-          <span id="ach-prog-count">0 / 0 달성</span>
-          <span id="ach-prog-pct">0%</span>
-        </div>
-        <div id="ach-progress-track">
-          <div id="ach-progress-fill" style="width:0%"></div>
-        </div>
+      <div class="mg-list">
+        <button class="mg-card" onclick="startGame('guess')">
+          <span class="mg-icon">🔢</span>
+          <span class="mg-name">숫자 맞추기</span>
+          <span class="mg-reward">최대 +30C</span>
+        </button>
+        <button class="mg-card" onclick="startGame('rps')">
+          <span class="mg-icon">✂️</span>
+          <span class="mg-name">가위바위보</span>
+          <span class="mg-reward">최대 +20C</span>
+        </button>
+        <button class="mg-card" onclick="startGame('scratch')">
+          <span class="mg-icon">🎰</span>
+          <span class="mg-name">슬롯머신</span>
+          <span class="mg-reward">최대 +50C</span>
+        </button>
+        <button class="mg-card" onclick="startGame('memory')">
+          <span class="mg-icon">🧠</span>
+          <span class="mg-name">기억력 게임</span>
+          <span class="mg-reward">최대 +40C</span>
+        </button>
       </div>
 
-      <!-- 카테고리 탭 -->
-      <div id="ach-cat-bar"></div>
-
-      <!-- 업적 카드 목록 -->
-      <div id="ach-card-list"></div>
-
+      <button class="mg-back-btn" onclick="closeMinigame()">← 돌아가기</button>
     </div>
 
-  </section><!-- /tab-achievement -->
+    <!-- 미니게임 플레이 영역 -->
+    <div id="mg-play" class="hidden"></div>
 
+  </div><!-- /minigame-screen -->
 
-  <!-- ══════════════════════════════════════
-       스크립트
-  ══════════════════════════════════════ -->
+  <!-- ══════════════════════════════
+       스크립트 로드
+  ══════════════════════════════ -->
   <script src="game.js"></script>
   <script src="minigame.js"></script>
   <script src="achievement.js"></script>
