@@ -256,3 +256,13 @@ function startNumber(area) {
 
   render(null);
 }
+function buildResult(area, { win, cashEarned, message, onRetry }) {
+  // ... 기존 코드 ...
+
+  if (win) {
+    addCash(cashEarned);
+    hamster.happiness = clamp(hamster.happiness + randInt(5, 12));
+    recordGameWin();   // ← 추가
+    saveGame();
+  }
+}
