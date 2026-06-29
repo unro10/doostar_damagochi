@@ -508,3 +508,29 @@ setInterval(() => {
 }, 10000);
 
 setInterval(saveGame, 30000);
+// ════════════════════════════════════════
+//  🗂️ 메인 탭 전환
+// ════════════════════════════════════════
+
+function switchTab(tabId) {
+  // 모든 섹션 숨기기
+  document.querySelectorAll(".tab-section").forEach(sec => {
+    sec.classList.remove("active");
+  });
+
+  // 모든 탭 버튼 비활성화
+  document.querySelectorAll(".main-tab").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  // 선택한 섹션 보이기
+  document.getElementById(tabId).classList.add("active");
+
+  // 선택한 탭 버튼 활성화
+  document.querySelector(`.main-tab[data-tab="${tabId}"]`).classList.add("active");
+
+  // 업적 탭으로 전환할 때 렌더링
+  if (tabId === "tab-achievement") {
+    renderAchievementPage();
+  }
+}
