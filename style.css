@@ -496,3 +496,160 @@ header h1 {
   #hamster-img { width: 160px; height: 160px; }
   .mg-game-list { grid-template-columns: 1fr; }
 }
+/* ══════════════════════════════
+   📅 출석 보상 팝업
+══════════════════════════════ */
+
+#attend-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#attend-card {
+  background: #FFFAF5;
+  border-radius: 24px;
+  padding: 28px 20px 24px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+#attend-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #7B52C1;
+  text-align: center;
+}
+
+#attend-streak {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #E05A00;
+  background: #FFF3E0;
+  border-radius: 100px;
+  padding: 6px 20px;
+}
+
+/* ── 달력 그리드 */
+#attend-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.attend-cell {
+  border-radius: 12px;
+  padding: 8px 2px;
+  text-align: center;
+  font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: transform 0.2s ease;
+}
+
+/* 이미 받은 날 */
+.attend-cell.done {
+  background: #E8F5E9;
+  border: 2px solid #81C784;
+  opacity: 0.75;
+}
+.attend-cell.done .attend-cash { color: #2E7D32; }
+
+/* 오늘 */
+.attend-cell.today {
+  background: linear-gradient(135deg, #FFD700, #FFA000);
+  border: 2px solid #FF8F00;
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(255,160,0,0.45);
+}
+.attend-cell.today .attend-day  { color: white; font-weight: 900; }
+.attend-cell.today .attend-cash { color: white; font-weight: 700; }
+.attend-cell.today .attend-bonus { color: white; }
+
+/* 아직 못 받은 날 */
+.attend-cell.future {
+  background: #F5F5F5;
+  border: 2px solid #DDD;
+  opacity: 0.6;
+}
+.attend-cell.future .attend-cash { color: #999; }
+
+.attend-day {
+  font-weight: 700;
+  font-size: 0.65rem;
+  color: #555;
+}
+
+.attend-cash {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.attend-bonus {
+  font-size: 0.6rem;
+  color: #C06000;
+  font-weight: 600;
+  min-height: 0.8em;
+  line-height: 1.2;
+  word-break: keep-all;
+  text-align: center;
+}
+
+/* ── 보상 요약 */
+#attend-summary {
+  background: #F3EFFA;
+  border-radius: 14px;
+  padding: 12px 20px;
+  text-align: center;
+  width: 100%;
+}
+
+#attend-summary p {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #5B3D9E;
+  margin: 4px 0;
+}
+
+/* ── 받기 버튼 */
+#attend-close-btn {
+  background: linear-gradient(135deg, #FFD700, #FFA000);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 48px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255,160,0,0.4);
+  transition: transform 0.15s ease;
+  touch-action: manipulation;
+}
+#attend-close-btn:hover  { transform: translateY(-2px); }
+#attend-close-btn:active { opacity: 0.85; transform: none; }
+
+/* ── 작은 화면 대응 */
+@media (max-width: 380px) {
+  #attend-grid { gap: 4px; }
+  .attend-cell { padding: 6px 1px; font-size: 0.62rem; }
+  .attend-cash { font-size: 0.68rem; }
+}
