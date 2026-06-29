@@ -1130,7 +1130,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 
 /* ══════════════════════════════
-   반응형
+   반응
 ══════════════════════════════ */
 @media (max-width:380px) {
   .shelf-buttons { gap:5px; }
