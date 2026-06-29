@@ -1,462 +1,511 @@
 // ════════════════════════════════════════
-//  🎮 뚜별 햄스터 - 미니게임
+//  🎮 뚜스터 미니게임 모음
 // ════════════════════════════════════════
 
-const PLAY_AREA = () => document.getElementById("mg-play");
-const SELECT    = () => document.getElementById("mg-select");
-
-// ── 게임 시작 라우터
+// ── 게임 시작 분기
 function startGame(type) {
-  SELECT().classList.add("hidden");
-  PLAY_AREA().classList.remove("hidden");
-  PLAY_AREA().innerHTML = "";
+  document.getElementById("mg-select").classList.add("hidden");
+  document.getElementById("mg-play").classList.remove("hidden");
 
-  if (type === "guess")   buildGuess();
-  if (type === "rps")     buildRPS();
-  if (type === "scratch") buildSlot();
-  if (type === "memory")  buildMemory();
-}
+  const area = document.getElementById("mg-game-area");
+  area.innerHTML = "";
 
-// ── 게임 → 선택 화면으로 돌아가기
-function backToSelect() {
-  PLAY_AREA().classList.add("hidden");
-  PLAY_AREA().innerHTML = "";
-  SELECT().classList.remove("hidden");
-}
-
-// ════════════════════════════════════════
-//  공통 결과 렌더러
-// ════════════════════════════════════════
-
-function buildResult(area, { win, cashEarned, message, onRetry }) {
-  const result = document.createElement("div");
-  result.className = `mg-result ${win ? "win" : "lose"}`;
-  result.textContent = message;
-  area.appendChild(result);
-
-  if (win) {
-    addCash(cashEarned);
-    hamster.happiness = clamp(hamster.happiness + randInt(5, 12));
-    recordGameWin();
-    saveGame();
+  switch (type) {
+    case "quiz":   startQuiz(area);   break;
+    case "word":   startWord(area);   break;
+    case "rps":    startRPS(area);    break;
+    case "number": startNumber(area); break;
   }
+}
 
-  // 버튼 래퍼
-  const btns = document.createElement("div");
-  btns.style.cssText =
-    "display:flex; gap:10px; width:100%; margin-top:4px;";
+// ── 선택 화면으로 돌아가기
+function backToSelect() {
+  document.getElementById("mg-select").classList.remove("hidden");
+  document.getElementById("mg-play").classList.add("hidden");
+}
+
+// ════════════════════════════════════════
+//  공통 UI 빌더
+// ════════════════════════════════════════
+
+function buildStory(text) {
+  const div = document.createElement("div");
+  div.className   = "mg-story";
+  div.textContent = text;
+  return div;
+}
+
+function buildChoices(choices) {
+  const div = document.createElement("div");
+  div.className = "mg-choices";
+  choices.forEach(({ label, onClick }) => {
+    const btn = document.createElement("button");
+    btn.className   = "mg-choice-btn";
+    btn.textContent = label;
+    btn.onclick     = onClick;
+    div.appendChild(btn);
+  });
+  return div;
+}
+
+function buildResult(area, { win, cashEarned, message, onRetry, onExit }) {
+  area.innerHTML = "";
+
+  const div = document.createElement("div");
+  div.className = `mg-result${win ? "" : " fail"}`;
+
+  const title = document.createElement("h3");
+  title.textContent = win
+    ? `🎉 성공! +${cashEarned}C 획득!`
+    : "😢 아쉬워요...";
+
+  const msg = document.createElement("p");
+  msg.textContent = message;
 
   const retryBtn = document.createElement("button");
-  retryBtn.className   = "mg-btn";
+  retryBtn.className   = "mg-result-btn";
   retryBtn.textContent = "🔄 다시 하기";
   retryBtn.onclick     = onRetry;
 
-  const backBtn = document.createElement("button");
-  backBtn.className   = "mg-btn";
-  backBtn.style.background =
-    "linear-gradient(135deg, #444, #666)";
-  backBtn.textContent = "← 목록으로";
-  backBtn.onclick     = backToSelect;
+  const exitBtn = document.createElement("button");
+  exitBtn.className   = "mg-result-btn secondary";
+  exitBtn.textContent = "📋 게임 목록";
+  exitBtn.onclick     = onExit ?? backToSelect;
 
-  btns.append(retryBtn, backBtn);
-  area.appendChild(btns);
+  div.append(title, msg, retryBtn, exitBtn);
+  area.appendChild(div);
+
+  if (win) {
+    addCash(cashEarned);
+
+    // 행복도 소폭 증가
+    hamster.happiness = clamp(hamster.happiness + randInt(5,12));
+    saveGame();
+  }
 }
 
 // ════════════════════════════════════════
-//  🔢 숫자 맞추기
+//  🧠 퀴즈 게임  (보상: 15C)
 // ════════════════════════════════════════
 
-function buildGuess() {
-  const area   = PLAY_AREA();
-  const wrap   = document.createElement("div");
-  wrap.className = "mg-game-wrap";
+const QUIZ_BANK = [
+  {
+    q: "햄스터가 가장 좋아하는 먹이는?",
+    choices: ["🥕 당근", "🧄 마늘", "🍋 레몬", "☕ 커피"],
+    answer: 0,
+  },
+  {
+    q: "햄스터의 평균 수명은?",
+    choices: ["1~2년", "3~4년", "10년", "20년"],
+    answer: 0,
+  },
+  {
+    q: "햄스터의 볼 주머니는 어디에 있나요?",
+    choices: ["배", "꼬리", "뺨", "귀"],
+    answer: 2,
+  },
+  {
+    q: "햄스터가 하루에 달리는 거리는?",
+    choices: ["1km", "5~10km", "50km", "100km"],
+    answer: 1,
+  },
+  {
+    q: "햄스터의 이빨은 평생 계속 자라나요?",
+    choices: ["예", "아니오"],
+    answer: 0,
+  },
+  {
+    q: "햄스터는 어느 동물 목(目)에 속하나요?",
+    choices: ["육식목", "설치목", "영장목", "유제목"],
+    answer: 1,
+  },
+  {
+    q: "다음 중 햄스터에게 위험한 음식은?",
+    choices: ["🌽 옥수수", "🧅 양파", "🫐 블루베리", "🥦 브로콜리"],
+    answer: 1,
+  },
+  {
+    q: "뚜스터의 이름에서 '뚜'는 어떤 의미?",
+    choices: ["두 번째", "뚜별(특별)하다", "두더지", "뚝딱"],
+    answer: 1,
+  },
+  {
+    q: "햄스터는 야행성인가요?",
+    choices: ["예, 밤에 활동해요", "아니오, 낮에 활동해요"],
+    answer: 0,
+  },
+  {
+    q: "햄스터 케이지 청소는 얼마나 자주 해야 하나요?",
+    choices: ["매일", "1~2주에 한 번", "한 달에 한 번", "1년에 한 번"],
+    answer: 1,
+  },
+];
 
-  let answer    = randInt(1, 30);
-  let tries     = 0;
-  const maxTry  = 5;
+function startQuiz(area) {
+  // 문제 랜덤 선택
+  const q = QUIZ_BANK[Math.floor(Math.random() * QUIZ_BANK.length)];
+  let answered = false;
 
-  const title = document.createElement("div");
-  title.className   = "mg-game-title";
-  title.textContent = "🔢 숫자 맞추기";
+  area.innerHTML = "";
 
-  const desc = document.createElement("div");
-  desc.className   = "mg-game-desc";
-  desc.textContent = `1 ~ 30 사이의 숫자를 ${maxTry}번 안에 맞춰보세요!\n맞추면 최대 +30C!`;
+  const story = buildStory(`🧠 퀴즈 타임!\n\n${q.q}`);
+  area.appendChild(story);
 
-  const input = document.createElement("input");
-  input.className   = "mg-input";
-  input.type        = "number";
-  input.min         = "1";
-  input.max         = "30";
-  input.placeholder = "숫자 입력 (1~30)";
-
-  const hint = document.createElement("div");
-  hint.className = "mg-hint";
-
-  const submitBtn = document.createElement("button");
-  submitBtn.className   = "mg-btn";
-  submitBtn.textContent = "확인!";
-
-  function doGuess() {
-    const val = parseInt(input.value, 10);
-    if (isNaN(val) || val < 1 || val > 30) {
-      hint.textContent = "⚠️ 1~30 사이 숫자를 입력해주세요!";
-      return;
-    }
-
-    tries++;
-    const left = maxTry - tries;
-
-    if (val === answer) {
-      submitBtn.disabled = true;
-      input.disabled     = true;
-      // 남은 시도 횟수에 따라 보상 차등
-      const cash = left === 4 ? 30
-                 : left === 3 ? 25
-                 : left === 2 ? 20
-                 : left === 1 ? 15
-                 : 10;
-
-      hint.textContent = "";
-      buildResult(wrap, {
-        win:       true,
-        cashEarned: cash,
-        message:   `🎉 정답! ${tries}번 만에 맞췄어요! (+${cash}C)`,
-        onRetry:   buildGuess,
-      });
-    } else if (tries >= maxTry) {
-      submitBtn.disabled = true;
-      input.disabled     = true;
-      hint.textContent = "";
-      buildResult(wrap, {
-        win:       false,
-        cashEarned: 0,
-        message:   `😢 아쉬워요! 정답은 ${answer}이었어요.`,
-        onRetry:   buildGuess,
-      });
-    } else {
-      hint.textContent =
-        val < answer
-          ? `📈 더 큰 숫자예요! (남은 기회: ${left}번)`
-          : `📉 더 작은 숫자예요! (남은 기회: ${left}번)`;
-      input.value = "";
-      input.focus();
-    }
-  }
-
-  submitBtn.onclick = doGuess;
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") doGuess();
-  });
-
-  wrap.append(title, desc, input, hint, submitBtn);
-  area.appendChild(wrap);
+  const choices = buildChoices(
+    q.choices.map((label, idx) => ({
+      label: `${["①","②","③","④"][idx]} ${label}`,
+      onClick() {
+        if (answered) return;
+        answered = true;
+        const win = idx === q.answer;
+        buildResult(area, {
+          win,
+          cashEarned: 15,
+          message: win
+            ? `정답! "${q.choices[q.answer]}" 이(가) 맞아요! 🎉`
+            : `틀렸어요... 정답은 "${q.choices[q.answer]}" 이에요 😢`,
+          onRetry: () => startQuiz(area),
+        });
+      },
+    }))
+  );
+  area.appendChild(choices);
 }
 
 // ════════════════════════════════════════
-//  ✂️ 가위바위보
+//  📝 끝말잇기  (보상: 10C)
 // ════════════════════════════════════════
 
-function buildRPS() {
-  const area = PLAY_AREA();
-  const wrap = document.createElement("div");
-  wrap.className = "mg-game-wrap";
+const WORD_DICT = [
+  "사과","과일","일기","기차","차도","도로","로봇","봇물","물고기","기린",
+  "린스","스타","타자","자동차","차량","량반","반지","지도","도서","서랍",
+  "랍스터","터널","널빤지","지붕","붕어","어머니","니트","트럭","럭비","비행기",
+  "기둥","둥지","지팡이","이불","불꽃","꽃잎","잎사귀","귀신","신발","발가락",
+  "락","악기","기와","와인","인형","형사","사탕","탕수육","육개장","장미",
+  "미소","소금","금반지","지갑","갑옷","옷장","장난감","감자","자전거","거울",
+  "울음","음악","악어","어린이","이슬","슬기","기억","억울","울타리","리본",
+];
 
-  const CHOICES = ["✊", "✌️", "🖐️"];
-  const NAMES   = { "✊": "바위", "✌️": "가위", "🖐️": "보" };
+function getWordStartChar(word) {
+  return word[word.length - 1];
+}
 
-  // 승패 규칙
-  function judge(me, cpu) {
-    if (me === cpu) return "draw";
-    if (
-      (me === "✊" && cpu === "✌️") ||
-      (me === "✌️" && cpu === "🖐️") ||
-      (me === "🖐️" && cpu === "✊")
-    ) return "win";
-    return "lose";
-  }
+function findNextWord(lastChar, used) {
+  const candidates = WORD_DICT.filter(
+    w => w[0] === lastChar && !used.has(w)
+  );
+  return candidates.length > 0
+    ? candidates[Math.floor(Math.random() * candidates.length)]
+    : null;
+}
 
-  const title = document.createElement("div");
-  title.className   = "mg-game-title";
-  title.textContent = "✂️ 가위바위보";
+function startWord(area) {
+  area.innerHTML = "";
 
-  const desc = document.createElement("div");
-  desc.className   = "mg-game-desc";
-  desc.textContent = "3판 2선승제! 이기면 +20C!";
+  const used  = new Set();
+  const chain = [];
+  let roundCount = 0;
+  const TARGET   = 5; // 5번 이어야 성공
 
-  // 스코어
-  let myScore  = 0;
-  let cpuScore = 0;
-  let round    = 1;
+  // 시작 단어 선택
+  const firstWord = WORD_DICT[Math.floor(Math.random() * WORD_DICT.length)];
+  used.add(firstWord);
+  chain.push(`🐹 뚜스터: "${firstWord}"`);
 
-  const scoreEl = document.createElement("div");
-  scoreEl.className = "mg-hint";
-  scoreEl.textContent = `나 0 : 0 뚜스터  (라운드 ${round}/3)`;
+  function render(lastWord) {
+    area.innerHTML = "";
 
-  const resultEl = document.createElement("div");
-  resultEl.className = "mg-hint";
-  resultEl.style.minHeight = "28px";
+    // 현재 체인 표시
+    const story = buildStory(
+      `📝 끝말잇기!\n"${lastWord}"로 끝나는 단어를 입력하세요.\n\n` +
+      `진행 (${roundCount}/${TARGET})\n\n` +
+      chain.slice(-4).join("\n")
+    );
+    area.appendChild(story);
 
-  const rpsbtns = document.createElement("div");
-  rpsbtns.className = "rps-btns";
+    // 입력창
+    const row = document.createElement("div");
+    row.className = "mg-input-row";
 
-  CHOICES.forEach((ch) => {
-    const btn = document.createElement("button");
-    btn.className   = "rps-btn";
-    btn.textContent = ch;
-    btn.title       = NAMES[ch];
+    const input = document.createElement("input");
+    input.className   = "mg-input";
+    input.placeholder = `"${getWordStartChar(lastWord)}"(으)로 시작하는 단어`;
+    input.type        = "text";
+    input.maxLength   = 10;
+    input.autofocus   = true;
 
-    btn.onclick = () => {
-      const cpu = CHOICES[randInt(0, 2)];
-      const res = judge(ch, cpu);
+    const submitBtn = document.createElement("button");
+    submitBtn.className   = "mg-submit-btn";
+    submitBtn.textContent = "입력";
 
-      if (res === "win")       { myScore++;  resultEl.textContent = `${ch} vs ${cpu} → ✅ 이겼어요!`; }
-      else if (res === "lose") { cpuScore++; resultEl.textContent = `${ch} vs ${cpu} → ❌ 졌어요...`; }
-      else                     {             resultEl.textContent = `${ch} vs ${cpu} → 🤝 비겼어요!`; }
+    row.append(input, submitBtn);
+    area.appendChild(row);
 
-      round++;
-      scoreEl.textContent =
-        `나 ${myScore} : ${cpuScore} 뚜스터  (라운드 ${round > 3 ? 3 : round}/3)`;
+    const msgEl = document.createElement("p");
+    msgEl.style.cssText = "margin-top:8px; font-size:0.88rem; color:#c00; text-align:center;";
+    area.appendChild(msgEl);
 
-      // 2선승 또는 3판 소진
-      const ended = myScore >= 2 || cpuScore >= 2 || round > 3;
-      if (ended) {
-        rpsbtns.querySelectorAll("button").forEach(b => b.disabled = true);
+    function trySubmit() {
+      const val = input.value.trim();
+      if (!val) return;
 
-        const win = myScore > cpuScore;
-        const draw = myScore === cpuScore;
-        setTimeout(() => {
-          buildResult(wrap, {
-            win:       win && !draw,
-            cashEarned: 20,
-            message:
-              draw ? `🤝 비겼어요! (${myScore}:${cpuScore})`
-            : win  ? `🎉 이겼어요! (+20C)  (${myScore}:${cpuScore})`
-            :        `😢 졌어요...  (${myScore}:${cpuScore})`,
-            onRetry: buildRPS,
-          });
-        }, 600);
+      const startChar = getWordStartChar(lastWord);
+
+      // 첫 글자 체크
+      if (val[0] !== startChar) {
+        msgEl.textContent = `⚠️ "${startChar}"(으)로 시작해야 해요!`;
+        input.value = "";
+        return;
       }
-    };
 
-    rpsbtns.appendChild(btn);
-  });
+      // 사전에 있는지 체크
+      if (!WORD_DICT.includes(val)) {
+        msgEl.textContent = "⚠️ 사전에 없는 단어예요! 다시 입력하세요.";
+        input.value = "";
+        return;
+      }
 
-  wrap.append(title, desc, scoreEl, rpsbtns, resultEl);
-  area.appendChild(wrap);
-}
+      // 이미 사용한 단어
+      if (used.has(val)) {
+        msgEl.textContent = "⚠️ 이미 사용한 단어예요!";
+        input.value = "";
+        return;
+      }
 
-// ════════════════════════════════════════
-//  🎰 슬롯머신
-// ════════════════════════════════════════
+      // 정상 입력
+      used.add(val);
+      chain.push(`😊 나: "${val}"`);
+      roundCount++;
 
-function buildSlot() {
-  const area = PLAY_AREA();
-  const wrap = document.createElement("div");
-  wrap.className = "mg-game-wrap";
+      // 성공 조건
+      if (roundCount >= TARGET) {
+        buildResult(area, {
+          win: true,
+          cashEarned: 10,
+          message: `${TARGET}번 끝말잇기 성공! 대단해요! 🎉`,
+          onRetry: () => startWord(area),
+        });
+        return;
+      }
 
-  const SYMBOLS = ["🍒", "🍋", "⭐", "🎯", "💎", "🐹"];
-  const COST    = 5;
+      // 뚜스터 응수
+      const next = findNextWord(getWordStartChar(val), used);
+      if (!next) {
+        // 뚜스터가 막힘 → 플레이어 승리!
+        chain.push("🐹 뚜스터: 항복! 모르겠어요~ 🏳️");
+        buildResult(area, {
+          win: true,
+          cashEarned: 10,
+          message: "뚜스터가 이을 단어를 찾지 못했어요! 🎉",
+          onRetry: () => startWord(area),
+        });
+        return;
+      }
 
-  const title = document.createElement("div");
-  title.className   = "mg-game-title";
-  title.textContent = "🎰 슬롯머신";
+      used.add(next);
+      chain.push(`🐹 뚜스터: "${next}"`);
 
-  const desc = document.createElement("div");
-  desc.className   = "mg-game-desc";
-  desc.textContent = `1회 배팅: ${COST}C\n🎯🎯🎯 = +30C  💎💎💎 = +50C\n같은 3개 = +20C  2개 일치 = +8C`;
-
-  // 릴 3개
-  const display = document.createElement("div");
-  display.className = "slot-display";
-
-  const reels = [0, 1, 2].map(() => {
-    const el = document.createElement("div");
-    el.className   = "slot-reel";
-    el.textContent = "❓";
-    display.appendChild(el);
-    return el;
-  });
-
-  const hint = document.createElement("div");
-  hint.className = "mg-hint";
-  hint.textContent = `보유 캐시: ${hamster.cash}C`;
-
-  const spinBtn = document.createElement("button");
-  spinBtn.className   = "mg-btn";
-  spinBtn.textContent = `🎰 돌리기 (-${COST}C)`;
-
-  spinBtn.onclick = () => {
-    if (hamster.cash < COST) {
-      hint.textContent = "💰 캐시가 부족해요!";
-      return;
+      render(next);
     }
 
-    spendCash(COST);
-    spinBtn.disabled = true;
-    hint.textContent = "두근두근...";
-
-    // 스핀 애니메이션
-    reels.forEach(r => r.classList.add("spinning"));
-
-    const results = reels.map(() => SYMBOLS[randInt(0, SYMBOLS.length - 1)]);
-
-    // 순차적으로 멈춤
-    reels.forEach((reel, i) => {
-      setTimeout(() => {
-        reel.classList.remove("spinning");
-        reel.textContent = results[i];
-        if (i === 2) {
-          // 결과 판정
-          const [a, b, c] = results;
-          let earned = 0;
-
-          if (a === b && b === c) {
-            earned = a === "💎" ? 50 : a === "🎯" ? 30 : 20;
-          } else if (a === b || b === c || a === c) {
-            earned = 8;
-          }
-
-          if (earned > 0) {
-            addCash(earned);
-            hint.textContent = `🎉 +${earned}C 획득!  보유: ${hamster.cash}C`;
-            recordGameWin();
-          } else {
-            hint.textContent = `😢 꽝!  보유: ${hamster.cash}C`;
-          }
-
-          spinBtn.disabled = false;
-          checkAchievements();
-        }
-      }, (i + 1) * 600);
+    submitBtn.onclick = trySubmit;
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") trySubmit();
     });
-  };
 
-  wrap.append(title, desc, display, hint, spinBtn);
+    // 포커스
+    setTimeout(() => input.focus(), 100);
+  }
 
-  const backBtn = document.createElement("button");
-  backBtn.className   = "mg-btn";
-  backBtn.style.background = "linear-gradient(135deg, #444, #666)";
-  backBtn.textContent = "← 목록으로";
-  backBtn.onclick     = backToSelect;
-
-  wrap.appendChild(backBtn);
-  area.appendChild(wrap);
+  render(firstWord);
 }
 
 // ════════════════════════════════════════
-//  🧠 기억력 게임
+//  ✊ 가위바위보  (보상: 8C)
 // ════════════════════════════════════════
 
-function buildMemory() {
-  const area = PLAY_AREA();
-  const wrap = document.createElement("div");
-  wrap.className = "mg-game-wrap";
+const RPS_ITEMS = ["✊","✌️","🖐️"];
+const RPS_NAMES = ["주먹","가위","보"];
+const RPS_WIN   = [2, 0, 1]; // [0]=주먹이 이기는 것=보(2), 등등
 
-  const EMOJIS  = ["🐹","🌸","⭐","🍎","🎀","🌈","🦊","🍦"];
-  const PAIRS   = [...EMOJIS, ...EMOJIS];
-  const REWARD  = 40;
+function startRPS(area) {
+  area.innerHTML = "";
 
-  // 셔플
-  for (let i = PAIRS.length - 1; i > 0; i--) {
-    const j = randInt(0, i);
-    [PAIRS[i], PAIRS[j]] = [PAIRS[j], PAIRS[i]];
+  let myScore   = 0;
+  let tuScore   = 0;
+  let round     = 0;
+  const ROUNDS  = 3; // 3판
+
+  function render() {
+    area.innerHTML = "";
+
+    const story = buildStory(
+      `✊ 가위바위보! (${round}/${ROUNDS}판)\n` +
+      `나: ${myScore}승  vs  뚜스터: ${tuScore}승\n\n` +
+      `무엇을 낼까요?`
+    );
+    area.appendChild(story);
+
+    const btnRow = document.createElement("div");
+    btnRow.className = "rps-btn-row";
+
+    RPS_ITEMS.forEach((emoji, idx) => {
+      const btn = document.createElement("button");
+      btn.className   = "rps-btn";
+      btn.textContent = emoji;
+      btn.title       = RPS_NAMES[idx];
+      btn.onclick     = () => playRound(idx);
+      btnRow.appendChild(btn);
+    });
+
+    area.appendChild(btnRow);
+
+    const hint = document.createElement("p");
+    hint.style.cssText = "text-align:center; margin-top:14px; font-size:0.82rem; color:#888;";
+    hint.textContent   = "✊ 주먹   ✌️ 가위   🖐️ 보";
+    area.appendChild(hint);
   }
 
-  const title = document.createElement("div");
-  title.className   = "mg-game-title";
-  title.textContent = "🧠 기억력 게임";
+  function playRound(myIdx) {
+    const tuIdx = Math.floor(Math.random() * 3);
+    round++;
 
-  const desc = document.createElement("div");
-  desc.className   = "mg-game-desc";
-  desc.textContent = `같은 카드 쌍을 모두 찾아요!\n성공하면 +${REWARD}C!`;
+    let resultText;
+    if (myIdx === tuIdx) {
+      resultText = "비겼어요! 🤝";
+    } else if (RPS_WIN[myIdx] === tuIdx) {
+      // 내가 이김
+      myScore++;
+      resultText = `이겼어요! ${RPS_ITEMS[myIdx]} > ${RPS_ITEMS[tuIdx]} 🎉`;
+    } else {
+      tuScore++;
+      resultText = `졌어요... ${RPS_ITEMS[tuIdx]} > ${RPS_ITEMS[myIdx]} 😢`;
+    }
 
-  // 이동 횟수
-  let moves   = 0;
-  let matched = 0;
-  const moveEl = document.createElement("div");
-  moveEl.className   = "mg-hint";
-  moveEl.textContent = "이동: 0번";
+    area.innerHTML = "";
 
-  const grid = document.createElement("div");
-  grid.className = "memory-grid";
+    const msg = buildStory(
+      `✊ ${round}판 결과\n` +
+      `나: ${RPS_ITEMS[myIdx]} (${RPS_NAMES[myIdx]})\n` +
+      `뚜스터: ${RPS_ITEMS[tuIdx]} (${RPS_NAMES[tuIdx]})\n\n` +
+      `${resultText}\n\n` +
+      `현재 스코어 → 나: ${myScore}  뚜스터: ${tuScore}`
+    );
+    area.appendChild(msg);
 
-  let first   = null;
-  let second  = null;
-  let locked  = false;
+    if (round >= ROUNDS) {
+      // 최종 결과
+      setTimeout(() => {
+        const win = myScore > tuScore;
+        const draw = myScore === tuScore;
+        buildResult(area, {
+          win: win || draw,
+          cashEarned: 8,
+          message: win
+            ? `${myScore}:${tuScore}으로 승리! 🎉`
+            : draw
+            ? `${myScore}:${tuScore} 무승부! 그래도 캐시 드려요~ 🤝`
+            : `${tuScore}:${myScore}으로 뚜스터가 이겼어요 😢`,
+          onRetry: () => startRPS(area),
+        });
+      }, 1200);
+    } else {
+      // 다음 라운드
+      const nextBtn = document.createElement("button");
+      nextBtn.className   = "mg-result-btn";
+      nextBtn.textContent = "▶ 다음 라운드";
+      nextBtn.style.marginTop = "14px";
+      nextBtn.onclick     = render;
+      area.appendChild(nextBtn);
+    }
+  }
 
-  // 카드 미리보기 (1.5초 후 뒤집기)
-  const cards = PAIRS.map((emoji, idx) => {
-    const card = document.createElement("div");
-    card.className        = "mem-card flipped";
-    card.textContent      = emoji;
-    card.dataset.emoji    = emoji;
-    card.dataset.idx      = idx;
+  render();
+}
 
-    grid.appendChild(card);
-    return card;
-  });
+// ════════════════════════════════════════
+//  🔢 숫자 맞히기  (보상: 20C)
+// ════════════════════════════════════════
 
-  // 1.5초 뒤 전부 뒤집기
-  setTimeout(() => {
-    cards.forEach(c => {
-      c.classList.remove("flipped");
-      c.textContent = "❓";
+function startNumber(area) {
+  const MAX     = 50;
+  const answer  = Math.floor(Math.random() * MAX) + 1;
+  let   tries   = 0;
+  const MAX_TRIES = 7;
+
+  function render(hint) {
+    area.innerHTML = "";
+
+    const story = buildStory(
+      `🔢 숫자 맞히기!\n` +
+      `1 ~ ${MAX} 사이의 숫자를 맞혀보세요.\n` +
+      `기회: ${MAX_TRIES - tries}번 남음`
+    );
+    area.appendChild(story);
+
+    if (hint) {
+      const hintEl = document.createElement("div");
+      hintEl.className   = `number-hint ${hint.cls}`;
+      hintEl.textContent = hint.text;
+      area.appendChild(hintEl);
+    }
+
+    const row = document.createElement("div");
+    row.className = "mg-input-row";
+
+    const input = document.createElement("input");
+    input.className   = "mg-input";
+    input.type        = "number";
+    input.min         = "1";
+    input.max         = String(MAX);
+    input.placeholder = `1 ~ ${MAX}`;
+
+    const submitBtn = document.createElement("button");
+    submitBtn.className   = "mg-submit-btn";
+    submitBtn.textContent = "확인";
+
+    row.append(input, submitBtn);
+    area.appendChild(row);
+
+    function tryGuess() {
+      const val = parseInt(input.value, 10);
+      if (isNaN(val) || val < 1 || val > MAX) {
+        input.value = "";
+        return;
+      }
+
+      tries++;
+
+      if (val === answer) {
+        buildResult(area, {
+          win: true,
+          cashEarned: 20,
+          message: `정답! ${answer}! ${tries}번 만에 맞혔어요! 🎉`,
+          onRetry: () => startNumber(area),
+        });
+      } else if (tries >= MAX_TRIES) {
+        buildResult(area, {
+          win: false,
+          cashEarned: 0,
+          message: `기회를 모두 썼어요... 정답은 ${answer} 이었어요 😢`,
+          onRetry: () => startNumber(area),
+        });
+      } else {
+        render(
+          val > answer
+            ? { cls: "high", text: `📉 ${val} → 더 낮은 숫자예요!` }
+            : { cls: "low",  text: `📈 ${val} → 더 높은 숫자예요!` }
+        );
+      }
+    }
+
+    submitBtn.onclick = tryGuess;
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") tryGuess();
     });
 
-    // 클릭 이벤트 활성화
-    cards.forEach(card => {
-      card.onclick = () => {
-        if (locked) return;
-        if (card.classList.contains("matched")) return;
-        if (card.classList.contains("flipped")) return;
+    setTimeout(() => input.focus(), 100);
+  }
 
-        card.classList.add("flipped");
-        card.textContent = card.dataset.emoji;
-
-        if (!first) {
-          first = card;
-        } else {
-          second = card;
-          locked = true;
-          moves++;
-          moveEl.textContent = `이동: ${moves}번`;
-
-          if (first.dataset.emoji === second.dataset.emoji) {
-            first.classList.add("matched");
-            second.classList.add("matched");
-            matched += 2;
-            first  = null;
-            second = null;
-            locked = false;
-
-            if (matched === PAIRS.length) {
-              // 클리어!
-              setTimeout(() => {
-                buildResult(wrap, {
-                  win:        true,
-                  cashEarned: REWARD,
-                  message:    `🎉 성공! ${moves}번 만에 다 찾았어요! (+${REWARD}C)`,
-                  onRetry:    buildMemory,
-                });
-              }, 500);
-            }
-          } else {
-            setTimeout(() => {
-              first.classList.remove("flipped");
-              first.textContent  = "❓";
-              second.classList.remove("flipped");
-              second.textContent = "❓";
-              first  = null;
-              second = null;
-              locked = false;
-            }, 900);
-          }
-        }
-      };
-    });
-  }, 1500);
-
-  wrap.append(title, desc, moveEl, grid);
-  area.appendChild(wrap);
+  render(null);
 }
