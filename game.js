@@ -28,8 +28,11 @@ const DEFAULT_STATE = {
   happiness:   100,
   hunger:      100,
   health:      100,
-  cash:        30,       // 시작 캐시
+  cash:        30,
   lastSaved:   Date.now(),
+  // 출석 관련
+  lastAttendDate:  "",   // "YYYY-MM-DD"
+  attendStreak:    0,    // 연속 출석일수
 };
 
 // ── 전역 상태
@@ -54,26 +57,19 @@ function loadGame() {
     hamster = { ...DEFAULT_STATE };
     return;
   }
-
   try {
     const saved = JSON.parse(raw);
     hamster = { ...DEFAULT_STATE, ...saved };
 
-    // ── 오프라인 경과 시간 처리
-    const elapsed = Math.floor((Date.now() - hamster.lastSaved) / 10000); // 10초 단위
-    if (elapsed > 0) {
-      applyOfflineDecay(elapsed);
-    }
+    const elapsed = Math.floor((Date.now() - hamster.lastSaved) / 10000);
+    if (elapsed > 0) applyOfflineDecay(elapsed);
   } catch {
     hamster = { ...DEFAULT_STATE };
   }
 }
 
-/** 오프라인 중 스탯 감소 */
 function applyOfflineDecay(ticks) {
-  const maxTicks = 360; // 최대 1시간치
-  const t = Math.min(ticks, maxTicks);
-
+  const t = Math.min(ticks, 360);
   hamster.cleanliness = clamp(hamster.cleanliness - randInt(2,4) * t);
   hamster.happiness   = clamp(hamster.happiness   - randInt(1,3) * t);
   hamster.hunger      = clamp(hamster.hunger      - randInt(3,5) * t);
@@ -103,21 +99,27 @@ function getStage(age) {
 
 function getCurrentState() {
   const { cleanliness, happiness, hunger, health } = hamster;
-  const minVal = Math.min(cleanliness, happiness, hunger, health);
-
   if (health      <= 0)  return "sick";
   if (hunger      <= 30) return "hungry";
   if (cleanliness <= 30) return "dirty";
   if (happiness   <= 30) return "sad";
-  if (minVal      <= 50) return "normal";
+  if (Math.min(cleanliness, happiness, hunger, health) <= 50) return "normal";
   return "happy";
+}
+
+// 오늘 날짜 "YYYY-MM-DD" 문자열
+function getTodayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 // ════════════════════════════════════════
 //  캐시 관련
 // ════════════════════════════════════════
 
-/** 캐시 추가 (미니게임 보상 등) */
 function addCash(amount) {
   hamster.cash += amount;
   updateCashDisplay();
@@ -125,7 +127,6 @@ function addCash(amount) {
   saveGame();
 }
 
-/** 캐시 차감. 성공 시 true 반환 */
 function spendCash(amount) {
   if (hamster.cash < amount) return false;
   hamster.cash -= amount;
@@ -138,13 +139,12 @@ function updateCashDisplay() {
   document.getElementById("cash-display").textContent = hamster.cash;
 }
 
-/** 캐시 획득 팝업 애니메이션 */
 function showCashPop(text) {
-  const el = document.createElement("div");
+  const el   = document.createElement("div");
   el.className   = "cash-pop";
   el.textContent = text;
 
-  const bar = document.querySelector(".cash-bar");
+  const bar  = document.querySelector(".cash-bar");
   const rect = bar.getBoundingClientRect();
   el.style.left = `${rect.right - 60}px`;
   el.style.top  = `${rect.top}px`;
@@ -154,12 +154,169 @@ function showCashPop(text) {
 }
 
 // ════════════════════════════════════════
+//  📅 출석 보상 시스템
+// ════════════════════════════════════════
+
+// 연속 일수별 보상표
+const ATTEND_REWARDS = [
+  { day: 1,  cash: 10,  bonus: "",          label: "첫째 날"  },
+  { day: 2,  cash: 15,  bonus: "",          label: "둘째 날"  },
+  { day: 3,  cash: 20,  bonus: "",          label: "셋째 날"  },
+  { day: 4,  cash: 25,  bonus: "",          label: "넷째 날"  },
+  { day: 5,  cash: 30,  bonus: "행복+10",   label: "다섯째 날" },
+  { day: 6,  cash: 35,  bonus: "",          label: "여섯째 날" },
+  { day: 7,  cash: 50,  bonus: "모든스탯+10", label: "🎉 7일 연속!" },
+];
+
+/** 오늘 받을 보상 정보 반환 (streak 기준) */
+function getRewardInfo(streak) {
+  const idx = Math.min(streak - 1, ATTEND_REWARDS.length - 1);
+  return ATTEND_REWARDS[idx];
+}
+
+/** 출석 체크 실행 — 하루 1회 */
+function checkAttendance() {
+  const today     = getTodayStr();
+  const lastDate  = hamster.lastAttendDate || "";
+
+  // 이미 오늘 출석했으면 스킵
+  if (lastDate === today) return;
+
+  // 연속 출석 계산
+  const yesterday = getYesterdayStr();
+  if (lastDate === yesterday) {
+    hamster.attendStreak += 1;
+  } else {
+    // 하루 이상 끊겼으면 리셋
+    hamster.attendStreak = 1;
+  }
+
+  // 7일 초과 시 순환
+  if (hamster.attendStreak > 7) hamster.attendStreak = 1;
+
+  hamster.lastAttendDate = today;
+
+  // 보상 적용
+  const reward = getRewardInfo(hamster.attendStreak);
+  hamster.cash += reward.cash;
+
+  if (reward.bonus === "행복+10") {
+    hamster.happiness = clamp(hamster.happiness + 10);
+  }
+  if (reward.bonus === "모든스탯+10") {
+    hamster.cleanliness = clamp(hamster.cleanliness + 10);
+    hamster.happiness   = clamp(hamster.happiness   + 10);
+    hamster.hunger      = clamp(hamster.hunger      + 10);
+    hamster.health      = clamp(hamster.health      + 10);
+  }
+
+  saveGame();
+
+  // 팝업 표시
+  showAttendPopup(reward);
+}
+
+function getYesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** 출석 팝업 UI 생성 */
+function showAttendPopup(reward) {
+  // 오버레이
+  const overlay = document.createElement("div");
+  overlay.id    = "attend-overlay";
+
+  // 카드
+  const card = document.createElement("div");
+  card.id    = "attend-card";
+
+  // 제목
+  const title = document.createElement("h2");
+  title.id          = "attend-title";
+  title.textContent = "📅 출석 보상!";
+
+  // 연속 일수
+  const streakEl = document.createElement("p");
+  streakEl.id          = "attend-streak";
+  streakEl.textContent = `🔥 ${hamster.attendStreak}일 연속 출석!`;
+
+  // 달력 그리드 (7칸)
+  const grid = document.createElement("div");
+  grid.id = "attend-grid";
+
+  for (let i = 1; i <= 7; i++) {
+    const cell = document.createElement("div");
+    cell.className = "attend-cell";
+
+    const r = getRewardInfo(i);
+
+    // 상태 표시
+    if (i < hamster.attendStreak) {
+      cell.classList.add("done");       // 이미 받음
+    } else if (i === hamster.attendStreak) {
+      cell.classList.add("today");      // 오늘!
+    } else {
+      cell.classList.add("future");     // 아직
+    }
+
+    const dayLabel = document.createElement("div");
+    dayLabel.className   = "attend-day";
+    dayLabel.textContent = `Day ${i}`;
+
+    const cashLabel = document.createElement("div");
+    cashLabel.className   = "attend-cash";
+    cashLabel.textContent = `+${r.cash}C`;
+
+    const bonusLabel = document.createElement("div");
+    bonusLabel.className   = "attend-bonus";
+    bonusLabel.textContent = r.bonus || "";
+
+    cell.append(dayLabel, cashLabel, bonusLabel);
+    grid.appendChild(cell);
+  }
+
+  // 오늘 보상 요약
+  const summary = document.createElement("div");
+  summary.id = "attend-summary";
+
+  const sumCash = document.createElement("p");
+  sumCash.textContent = `💰 +${reward.cash}C 획득!`;
+
+  const sumBonus = document.createElement("p");
+  sumBonus.textContent = reward.bonus ? `🎁 보너스: ${reward.bonus}` : "";
+  sumBonus.style.display = reward.bonus ? "block" : "none";
+
+  summary.append(sumCash, sumBonus);
+
+  // 확인 버튼
+  const closeBtn = document.createElement("button");
+  closeBtn.id          = "attend-close-btn";
+  closeBtn.textContent = "✅ 받기";
+  closeBtn.onclick     = () => {
+    overlay.remove();
+    updateCashDisplay();
+    refreshUI();
+    // 캐시 팝업 애니메이션
+    showCashPop(`+${reward.cash}C`);
+  };
+
+  card.append(title, streakEl, grid, summary, closeBtn);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+}
+
+// ════════════════════════════════════════
 //  스탯 감소 (게임 루프)
 // ════════════════════════════════════════
 
 function updateStats() {
-  hamster.age  += 1;
-  hamster.stage = getStage(hamster.age);
+  hamster.age   += 1;
+  hamster.stage  = getStage(hamster.age);
 
   hamster.cleanliness = clamp(hamster.cleanliness - randInt(2,5));
   hamster.happiness   = clamp(hamster.happiness   - randInt(1,4));
@@ -278,7 +435,6 @@ function actionFeed() {
     return;
   }
   if (hamster.hunger >= 90) {
-    // 환불
     addCash(COSTS.feed);
     showActionMsg("배가 불러요! 너무 많이 먹이면 안 돼요! 🐹");
     return;
@@ -339,18 +495,16 @@ function closeMinigame() {
 }
 
 // ════════════════════════════════════════
-//  게임 루프
+//  🚀 초기화
 // ════════════════════════════════════════
 
-// 초기화
 loadGame();
 refreshUI();
+checkAttendance();   // ← 출석 체크 (로드 직후 실행)
 
-// 10초마다 스탯 감소
 setInterval(() => {
   updateStats();
   refreshUI();
 }, 10000);
 
-// 30초마다 자동 저장
 setInterval(saveGame, 30000);
