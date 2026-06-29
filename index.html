@@ -8,43 +8,72 @@
 </head>
 <body>
 
-  <!-- ══════════════════════════════
-       상단 캐시 바
-  ══════════════════════════════ -->
+  <!-- 상단 바 -->
   <div class="cash-bar">
-  <div class="cash-bar-left">
-    <span class="cash-icon">💰</span>
-    <strong id="cash-display">0</strong>
-    <span>C</span>
+    <span>💰 <strong id="cash-display">0</strong>C</span>
+    <span class="game-title">🐹 뚜별 햄스터</span>
+    <button class="icon-btn" onclick="openAchievements()">🏆 업적</button>
   </div>
-  <span class="game-title">🐹 뚜별 햄스터</span>
-  <button class="icon-btn" onclick="openAchievements()">🏆 업적</button>
-</div>
-  <!-- ══════════════════════════════
-       메인 : 집 레이아웃
-  ══════════════════════════════ -->
+
+  <!-- 메인 방 -->
   <div id="game-screen">
 
-    <!-- 지붕 -->
-    <div class="house-roof">
-      <div class="roof-triangle"></div>
-      <div class="roof-label" id="stage-label">아기 🍼</div>
-    </div>
+    <!-- ① 벽 -->
+    <div class="room-wall">
 
-    <!-- 집 본체 -->
-    <div class="house-body">
+      <!-- 벽 장식 -->
+      <div class="wall-deco">
 
-      <!-- 창문 : 햄스터 -->
-      <div class="house-window">
-        <div class="hamster-box">
-          <img id="hamster-img" src="images/happy.png" alt="햄스터" />
+        <!-- 왼쪽 액자 -->
+        <div class="wall-frame">
+          <div class="wall-frame-inner">🐹</div>
+          <div class="wall-frame-label">뚜스터</div>
         </div>
-        <div id="state-msg">😊 뚜스터가 행복해요!</div>
-        <div id="warn-msg"></div>
-        <div id="action-msg"></div>
+
+        <!-- 전등 -->
+        <div class="wall-lamp">
+          <div class="lamp-wire"></div>
+          <div class="lamp-shade"></div>
+          <div class="lamp-glow"></div>
+        </div>
+
+        <!-- 달력 -->
+        <div class="wall-calendar">
+          <div class="cal-month" id="cal-month-label">1월</div>
+          <div class="cal-day"   id="cal-day-label">1</div>
+          <div class="cal-dow"   id="cal-dow-label">월</div>
+        </div>
+
       </div>
 
-      <!-- 스탯 판 -->
+      <!-- 햄스터 케이지 -->
+      <div class="cage-wrap">
+        <!-- 케이지 바 -->
+        <div class="cage-bars">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+        <!-- 케이지 바퀴 -->
+        <div class="cage-wheel"></div>
+        <!-- 케이지 장식 -->
+        <div class="cage-deco">🥕</div>
+        <!-- 케이지 바닥 -->
+        <div class="cage-floor"></div>
+        <!-- 내부 -->
+        <div class="cage-inner">
+          <div class="hamster-box">
+            <img id="hamster-img" src="images/happy.png" alt="햄스터" />
+          </div>
+          <div id="state-msg">😊 뚜스터가 행복해요!</div>
+          <div id="warn-msg"></div>
+          <div id="action-msg"></div>
+        </div>
+      </div>
+
+      <!-- 스탯 보드 -->
       <div class="stat-board">
         <div class="stat-row">
           <span class="stat-label">🛁 청결</span>
@@ -76,52 +105,73 @@
         </div>
       </div>
 
-      <!-- 문 : 액션 버튼 -->
-      <div class="house-door-row">
-        <button class="door-btn" onclick="actionFeed()">
-          <span class="door-icon">🥕</span>
-          <span class="door-name">밥주기</span>
-          <span class="door-cost">10C</span>
-        </button>
-        <button class="door-btn" onclick="actionClean()">
-          <span class="door-icon">🛁</span>
-          <span class="door-name">씻기기</span>
-          <span class="door-cost">10C</span>
-        </button>
-        <button class="door-btn" onclick="actionMedicine()">
-          <span class="door-icon">💊</span>
-          <span class="door-name">약주기</span>
-          <span class="door-cost">20C</span>
-        </button>
-        <button class="door-btn highlight" onclick="openMinigameModal()">
-          <span class="door-icon">🎮</span>
-          <span class="door-name">미니게임</span>
-          <span class="door-cost">캐시 획득</span>
-        </button>
+    </div><!-- /.room-wall -->
+
+    <!-- ② 바닥 -->
+    <div class="room-floor">
+
+      <!-- 러그 -->
+      <div class="floor-rug"></div>
+
+      <!-- 작은 테이블 -->
+      <div class="floor-table">
+        <div class="table-item">☕</div>
+        <div class="table-top"></div>
+        <div class="table-legs">
+          <div class="table-leg"></div>
+          <div class="table-leg"></div>
+        </div>
       </div>
 
-    </div><!-- /.house-body -->
+      <!-- 화분 -->
+      <div class="floor-plant">
+        <div class="plant-leaves">🌿</div>
+        <div class="plant-pot"></div>
+      </div>
 
-    <!-- 잔디 -->
-    <div class="house-ground">
-      <span>🌿</span><span>🌸</span><span>🌿</span>
-      <span>🌼</span><span>🌿</span><span>🌸</span><span>🌿</span>
-    </div>
+      <!-- 선반 + 버튼 -->
+      <div class="floor-shelf-wrap">
+        <div class="shelf-board">
+          <div class="shelf-buttons">
+            <button class="shelf-btn feed" onclick="actionFeed()">
+              <span class="shelf-icon">🥕</span>
+              <span class="shelf-name">밥주기</span>
+              <span class="shelf-cost">10C</span>
+            </button>
+            <button class="shelf-btn clean" onclick="actionClean()">
+              <span class="shelf-icon">🛁</span>
+              <span class="shelf-name">씻기기</span>
+              <span class="shelf-cost">10C</span>
+            </button>
+            <button class="shelf-btn medicine" onclick="actionMedicine()">
+              <span class="shelf-icon">💊</span>
+              <span class="shelf-name">약주기</span>
+              <span class="shelf-cost">20C</span>
+            </button>
+            <button class="shelf-btn game" onclick="openMinigameModal()">
+              <span class="shelf-icon">🎮</span>
+              <span class="shelf-name">미니게임</span>
+              <span class="shelf-cost">캐시 획득</span>
+            </button>
+          </div>
+        </div>
+        <div class="shelf-support">
+          <div class="shelf-bracket"></div>
+          <div class="shelf-bracket"></div>
+        </div>
+      </div>
+
+    </div><!-- /.room-floor -->
 
   </div><!-- /#game-screen -->
 
-  <!-- ══════════════════════════════
-       미니게임 모달
-  ══════════════════════════════ -->
+  <!-- 미니게임 모달 -->
   <div id="mg-modal" class="modal-overlay hidden">
     <div class="modal-card">
-
       <div class="modal-header">
         <span class="modal-title">🎮 미니게임</span>
         <button class="modal-close" onclick="closeMinigameModal()">✕</button>
       </div>
-
-      <!-- 게임 선택 -->
       <div id="mg-select">
         <p class="mg-sub">이겨서 캐시를 모아요!</p>
         <div class="mg-game-list">
@@ -148,17 +198,28 @@
           </button>
         </div>
       </div>
-
-      <!-- 게임 플레이 영역 -->
       <div id="mg-play" class="hidden"></div>
-
     </div>
   </div>
 
-  <!-- JS -->
   <script src="game.js"></script>
   <script src="achievement.js"></script>
   <script src="minigame.js"></script>
 
+  <!-- 달력 날짜 표시 -->
+  <script>
+    (function() {
+      const now = new Date();
+      const months = ['1월','2월','3월','4월','5월','6월',
+                      '7월','8월','9월','10월','11월','12월'];
+      const dows   = ['일','월','화','수','목','금','토'];
+      const m = document.getElementById('cal-month-label');
+      const d = document.getElementById('cal-day-label');
+      const w = document.getElementById('cal-dow-label');
+      if(m) m.textContent = months[now.getMonth()];
+      if(d) d.textContent = now.getDate();
+      if(w) w.textContent = dows[now.getDay()];
+    })();
+  </script>
 </body>
 </html>
