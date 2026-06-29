@@ -21,23 +21,31 @@ const STATE_INFO = {
 
 // ── 기본 상태
 const DEFAULT_STATE = {
-  name:        "뚜스터",
-  age:         0,
-  stage:       "아기 🍼",
-  cleanliness: 100,
-  happiness:   100,
-  hunger:      100,
-  health:      100,
-  cash:        30,
-  lastSaved:   Date.now(),
-  // 출석 관련
-  lastAttendDate:  "",   // "YYYY-MM-DD"
-  attendStreak:    0,    // 연속 출석일수
+  name:             "뚜스터",
+  age:              0,
+  stage:            "아기 🍼",
+  cleanliness:      100,
+  happiness:        100,
+  hunger:           100,
+  health:           100,
+  cash:             30,
+  lastSaved:        Date.now(),
+  // 출석
+  lastAttendDate:   "",
+  attendStreak:     0,
+  totalAttendDays:  0,
+  // 업적용 통계
+  totalFeed:        0,
+  totalClean:       0,
+  totalMedicine:    0,
+  totalGameWins:    0,
+  totalCashEarned:  30,
+  unlockedAch:      [],
 };
 
 // ── 전역 상태
-let hamster    = {};
-let currentImg = "";
+let hamster      = {};
+let currentImg   = "";
 let actionMsgTimer = null;
 
 // ════════════════════════════════════════
@@ -70,10 +78,10 @@ function loadGame() {
 
 function applyOfflineDecay(ticks) {
   const t = Math.min(ticks, 360);
-  hamster.cleanliness = clamp(hamster.cleanliness - randInt(2,4) * t);
-  hamster.happiness   = clamp(hamster.happiness   - randInt(1,3) * t);
-  hamster.hunger      = clamp(hamster.hunger      - randInt(3,5) * t);
-  hamster.health      = clamp(hamster.health      - randInt(1,2) * t);
+  hamster.cleanliness = clamp(hamster.cleanliness - randInt(2, 4) * t);
+  hamster.happiness   = clamp(hamster.happiness   - randInt(1, 3) * t);
+  hamster.hunger      = clamp(hamster.hunger      - randInt(3, 5) * t);
+  hamster.health      = clamp(hamster.health      - randInt(1, 2) * t);
   hamster.age        += t;
   hamster.stage       = getStage(hamster.age);
 }
@@ -109,9 +117,18 @@ function getCurrentState() {
 
 // 오늘 날짜 "YYYY-MM-DD" 문자열
 function getTodayStr() {
+  const d   = new Date();
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function getYesterdayStr() {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
+  d.setDate(d.getDate() - 1);
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
@@ -121,7 +138,8 @@ function getTodayStr() {
 // ════════════════════════════════════════
 
 function addCash(amount) {
-  hamster.cash += amount;
+  hamster.cash            += amount;
+  hamster.totalCashEarned  = (hamster.totalCashEarned || 0) + amount;
   updateCashDisplay();
   showCashPop(`+${amount}C`);
   saveGame();
@@ -140,7 +158,7 @@ function updateCashDisplay() {
 }
 
 function showCashPop(text) {
-  const el   = document.createElement("div");
+  const el  = document.createElement("div");
   el.className   = "cash-pop";
   el.textContent = text;
 
@@ -157,48 +175,42 @@ function showCashPop(text) {
 //  📅 출석 보상 시스템
 // ════════════════════════════════════════
 
-// 연속 일수별 보상표
 const ATTEND_REWARDS = [
-  { day: 1,  cash: 10,  bonus: "",          label: "첫째 날"  },
-  { day: 2,  cash: 15,  bonus: "",          label: "둘째 날"  },
-  { day: 3,  cash: 20,  bonus: "",          label: "셋째 날"  },
-  { day: 4,  cash: 25,  bonus: "",          label: "넷째 날"  },
-  { day: 5,  cash: 30,  bonus: "행복+10",   label: "다섯째 날" },
-  { day: 6,  cash: 35,  bonus: "",          label: "여섯째 날" },
-  { day: 7,  cash: 50,  bonus: "모든스탯+10", label: "🎉 7일 연속!" },
+  { day: 1, cash: 10, bonus: "",            label: "첫째 날"   },
+  { day: 2, cash: 15, bonus: "",            label: "둘째 날"   },
+  { day: 3, cash: 20, bonus: "",            label: "셋째 날"   },
+  { day: 4, cash: 25, bonus: "",            label: "넷째 날"   },
+  { day: 5, cash: 30, bonus: "행복+10",     label: "다섯째 날" },
+  { day: 6, cash: 35, bonus: "",            label: "여섯째 날" },
+  { day: 7, cash: 50, bonus: "모든스탯+10", label: "🎉 7일 연속!" },
 ];
 
-/** 오늘 받을 보상 정보 반환 (streak 기준) */
 function getRewardInfo(streak) {
   const idx = Math.min(streak - 1, ATTEND_REWARDS.length - 1);
   return ATTEND_REWARDS[idx];
 }
 
-/** 출석 체크 실행 — 하루 1회 */
 function checkAttendance() {
-  const today     = getTodayStr();
-  const lastDate  = hamster.lastAttendDate || "";
+  const today    = getTodayStr();
+  const lastDate = hamster.lastAttendDate || "";
 
-  // 이미 오늘 출석했으면 스킵
   if (lastDate === today) return;
 
-  // 연속 출석 계산
   const yesterday = getYesterdayStr();
   if (lastDate === yesterday) {
     hamster.attendStreak += 1;
   } else {
-    // 하루 이상 끊겼으면 리셋
     hamster.attendStreak = 1;
   }
 
-  // 7일 초과 시 순환
   if (hamster.attendStreak > 7) hamster.attendStreak = 1;
 
-  hamster.lastAttendDate = today;
+  hamster.lastAttendDate  = today;
+  hamster.totalAttendDays = (hamster.totalAttendDays || 0) + 1;
 
-  // 보상 적용
   const reward = getRewardInfo(hamster.attendStreak);
-  hamster.cash += reward.cash;
+  hamster.cash           += reward.cash;
+  hamster.totalCashEarned = (hamster.totalCashEarned || 0) + reward.cash;
 
   if (reward.bonus === "행복+10") {
     hamster.happiness = clamp(hamster.happiness + 10);
@@ -211,36 +223,20 @@ function checkAttendance() {
   }
 
   saveGame();
-
-  // 팝업 표시
   showAttendPopup(reward);
 }
 
-function getYesterdayStr() {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  const y   = d.getFullYear();
-  const m   = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-/** 출석 팝업 UI 생성 */
 function showAttendPopup(reward) {
-  // 오버레이
   const overlay = document.createElement("div");
   overlay.id    = "attend-overlay";
 
-  // 카드
   const card = document.createElement("div");
   card.id    = "attend-card";
 
-  // 제목
   const title = document.createElement("h2");
   title.id          = "attend-title";
   title.textContent = "📅 출석 보상!";
 
-  // 연속 일수
   const streakEl = document.createElement("p");
   streakEl.id          = "attend-streak";
   streakEl.textContent = `🔥 ${hamster.attendStreak}일 연속 출석!`;
@@ -255,13 +251,12 @@ function showAttendPopup(reward) {
 
     const r = getRewardInfo(i);
 
-    // 상태 표시
     if (i < hamster.attendStreak) {
-      cell.classList.add("done");       // 이미 받음
+      cell.classList.add("done");
     } else if (i === hamster.attendStreak) {
-      cell.classList.add("today");      // 오늘!
+      cell.classList.add("today");
     } else {
-      cell.classList.add("future");     // 아직
+      cell.classList.add("future");
     }
 
     const dayLabel = document.createElement("div");
@@ -288,12 +283,11 @@ function showAttendPopup(reward) {
   sumCash.textContent = `💰 +${reward.cash}C 획득!`;
 
   const sumBonus = document.createElement("p");
-  sumBonus.textContent = reward.bonus ? `🎁 보너스: ${reward.bonus}` : "";
+  sumBonus.textContent   = reward.bonus ? `🎁 보너스: ${reward.bonus}` : "";
   sumBonus.style.display = reward.bonus ? "block" : "none";
 
   summary.append(sumCash, sumBonus);
 
-  // 확인 버튼
   const closeBtn = document.createElement("button");
   closeBtn.id          = "attend-close-btn";
   closeBtn.textContent = "✅ 받기";
@@ -301,8 +295,9 @@ function showAttendPopup(reward) {
     overlay.remove();
     updateCashDisplay();
     refreshUI();
-    // 캐시 팝업 애니메이션
     showCashPop(`+${reward.cash}C`);
+    // 출석 후 업적 체크
+    checkAchievements();
   };
 
   card.append(title, streakEl, grid, summary, closeBtn);
@@ -318,16 +313,16 @@ function updateStats() {
   hamster.age   += 1;
   hamster.stage  = getStage(hamster.age);
 
-  hamster.cleanliness = clamp(hamster.cleanliness - randInt(2,5));
-  hamster.happiness   = clamp(hamster.happiness   - randInt(1,4));
-  hamster.hunger      = clamp(hamster.hunger      - randInt(3,6));
+  hamster.cleanliness = clamp(hamster.cleanliness - randInt(2, 5));
+  hamster.happiness   = clamp(hamster.happiness   - randInt(1, 4));
+  hamster.hunger      = clamp(hamster.hunger      - randInt(3, 6));
 
   let penalty = 0;
   if (hamster.cleanliness < 30) penalty += 3;
   if (hamster.happiness   < 30) penalty += 2;
   if (hamster.hunger      < 30) penalty += 5;
 
-  hamster.health = clamp(hamster.health - (randInt(1,3) + penalty));
+  hamster.health = clamp(hamster.health - (randInt(1, 3) + penalty));
 
   saveGame();
 }
@@ -343,7 +338,7 @@ function updateBar(key, value) {
   fill.style.width = `${value}%`;
   val.textContent  = `${value}%`;
 
-  fill.classList.remove("good","normal","bad");
+  fill.classList.remove("good", "normal", "bad");
   if (value >= 70)      fill.classList.add("good");
   else if (value >= 40) fill.classList.add("normal");
   else                  fill.classList.add("bad");
@@ -439,8 +434,9 @@ function actionFeed() {
     showActionMsg("배가 불러요! 너무 많이 먹이면 안 돼요! 🐹");
     return;
   }
-  hamster.hunger    = clamp(hamster.hunger    + randInt(25,35));
-  hamster.happiness = clamp(hamster.happiness + randInt(5,10));
+  hamster.hunger    = clamp(hamster.hunger    + randInt(25, 35));
+  hamster.happiness = clamp(hamster.happiness + randInt(5,  10));
+  recordFeed();
   showActionMsg(`냠냠냠~ 맛있게 먹고 있어요! 🥕 (-${COSTS.feed}C)`);
   bounceHamster();
   refreshUI();
@@ -452,9 +448,10 @@ function actionClean() {
     showActionMsg(`💰 캐시가 부족해요! (필요: ${COSTS.clean}C)`);
     return;
   }
-  hamster.cleanliness = clamp(hamster.cleanliness + randInt(30,45));
-  hamster.happiness   = clamp(hamster.happiness   + randInt(5,15));
-  hamster.health      = clamp(hamster.health      + randInt(3,8));
+  hamster.cleanliness = clamp(hamster.cleanliness + randInt(30, 45));
+  hamster.happiness   = clamp(hamster.happiness   + randInt(5,  15));
+  hamster.health      = clamp(hamster.health      + randInt(3,   8));
+  recordClean();
   showActionMsg(`깨끗하게 씻겨줬어요! 상쾌해~ 🛁 (-${COSTS.clean}C)`);
   bounceHamster();
   refreshUI();
@@ -471,8 +468,9 @@ function actionMedicine() {
     showActionMsg("뚜스터가 건강해요! 약은 필요 없어요~ 💊");
     return;
   }
-  hamster.health    = clamp(hamster.health    + randInt(20,35));
-  hamster.happiness = clamp(hamster.happiness - randInt(5,10));
+  hamster.health    = clamp(hamster.health    + randInt(20, 35));
+  hamster.happiness = clamp(hamster.happiness - randInt(5,  10));
+  recordMedicine();
   showActionMsg(`약을 먹였어요! 으... 써... 🤒 (-${COSTS.medicine}C)`);
   bounceHamster();
   refreshUI();
@@ -480,7 +478,7 @@ function actionMedicine() {
 }
 
 // ════════════════════════════════════════
-//  미니게임 화면 열기/닫기
+//  미니게임 화면 열기 / 닫기
 // ════════════════════════════════════════
 
 function openMinigame() {
@@ -500,11 +498,13 @@ function closeMinigame() {
 
 loadGame();
 refreshUI();
-checkAttendance();   // ← 출석 체크 (로드 직후 실행)
+checkAttendance();
+checkAchievements();
 
 setInterval(() => {
   updateStats();
   refreshUI();
+  checkAchievements();
 }, 10000);
 
 setInterval(saveGame, 30000);
