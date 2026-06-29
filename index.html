@@ -2,75 +2,142 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>🐹 뚜별 햄스터 키우기</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ── 타이틀 ── -->
-  <header>
-    <h1>🐹 뚜별 햄스터 키우기</h1>
-    <p id="stage-label">이름: 뚜스터 | 단계: 아기 🍼 | ⏰ 0분 경과</p>
-  </header>
+  <!-- ══════════════════════════════
+       메인 화면
+  ══════════════════════════════ -->
+  <div id="main-screen">
 
-  <!-- ── 햄스터 이미지 ── -->
-  <section class="hamster-box">
-    <img id="hamster-img" src="images/happy.png" alt="뚜스터" />
-    <p id="state-msg">😊 뚜스터가 행복해요!</p>
-  </section>
+    <!-- 타이틀 -->
+    <header>
+      <h1>🐹 뚜별 햄스터 키우기</h1>
+      <p id="stage-label">이름: 뚜스터 | 단계: 아기 🍼 | ⏰ 0분 경과</p>
+    </header>
 
-  <!-- ── 상태바 ── -->
-  <section class="stats-box">
-
-    <div class="stat-row">
-      <span class="stat-label">🛁 청결도</span>
-      <div class="bar-bg">
-        <div class="bar-fill" id="bar-cleanliness" style="width:100%"></div>
-      </div>
-      <span class="stat-val" id="val-cleanliness">100%</span>
+    <!-- 캐시 표시 -->
+    <div class="cash-bar">
+      <span>💰 캐시</span>
+      <span id="cash-display">0</span>
+      <span>C</span>
     </div>
 
-    <div class="stat-row">
-      <span class="stat-label">💕 행복도</span>
-      <div class="bar-bg">
-        <div class="bar-fill" id="bar-happiness" style="width:100%"></div>
+    <!-- 햄스터 이미지 -->
+    <section class="hamster-box">
+      <img id="hamster-img" src="images/happy.png" alt="뚜스터" />
+      <p id="state-msg">😊 뚜스터가 행복해요!</p>
+    </section>
+
+    <!-- 상태바 -->
+    <section class="stats-box">
+
+      <div class="stat-row">
+        <span class="stat-label">🛁 청결도</span>
+        <div class="bar-bg">
+          <div class="bar-fill" id="bar-cleanliness"></div>
+        </div>
+        <span class="stat-val" id="val-cleanliness">100%</span>
       </div>
-      <span class="stat-val" id="val-happiness">100%</span>
+
+      <div class="stat-row">
+        <span class="stat-label">💕 행복도</span>
+        <div class="bar-bg">
+          <div class="bar-fill" id="bar-happiness"></div>
+        </div>
+        <span class="stat-val" id="val-happiness">100%</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">🥕 포만감</span>
+        <div class="bar-bg">
+          <div class="bar-fill" id="bar-hunger"></div>
+        </div>
+        <span class="stat-val" id="val-hunger">100%</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">❤️ 건강도</span>
+        <div class="bar-bg">
+          <div class="bar-fill" id="bar-health"></div>
+        </div>
+        <span class="stat-val" id="val-health">100%</span>
+      </div>
+
+    </section>
+
+    <!-- 경고 메시지 -->
+    <p id="warn-msg"></p>
+
+    <!-- 버튼 -->
+    <section class="btn-box">
+      <button class="btn btn-feed"     onclick="actionFeed()">
+        🥕 밥 주기<br/><span class="btn-cost">10C</span>
+      </button>
+      <button class="btn btn-clean"    onclick="actionClean()">
+        🛁 씻기기<br/><span class="btn-cost">10C</span>
+      </button>
+      <button class="btn btn-play"     onclick="openMinigame()">
+        🎮 놀아주기<br/><span class="btn-cost">캐시 획득!</span>
+      </button>
+      <button class="btn btn-medicine" onclick="actionMedicine()">
+        💊 약 먹이기<br/><span class="btn-cost">20C</span>
+      </button>
+    </section>
+
+    <!-- 액션 결과 메시지 -->
+    <p id="action-msg"></p>
+
+  </div><!-- /main-screen -->
+
+
+  <!-- ══════════════════════════════
+       미니게임 화면 (오버레이)
+  ══════════════════════════════ -->
+  <div id="minigame-screen" class="hidden">
+
+    <div class="mg-container">
+
+      <div class="mg-header">
+        <h2>🎮 뚜스터와 놀기</h2>
+        <button class="mg-close-btn" onclick="closeMinigame()">✕ 나가기</button>
+      </div>
+
+      <!-- 게임 선택 화면 -->
+      <div id="mg-select">
+        <p class="mg-desc">미니게임을 선택하세요!<br/>게임에서 이기면 캐시를 얻어요 💰</p>
+        <div class="mg-game-list">
+          <button class="mg-game-btn" onclick="startGame('quiz')">
+            🧠 퀴즈 게임<br/><small>정답 맞히면 +15C</small>
+          </button>
+          <button class="mg-game-btn" onclick="startGame('word')">
+            📝 끝말잇기<br/><small>단어 연결하면 +10C</small>
+          </button>
+          <button class="mg-game-btn" onclick="startGame('rps')">
+            ✊ 가위바위보<br/><small>이기면 +8C</small>
+          </button>
+          <button class="mg-game-btn" onclick="startGame('number')">
+            🔢 숫자 맞히기<br/><small>맞히면 +20C</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- 게임 플레이 화면 -->
+      <div id="mg-play" class="hidden">
+        <div id="mg-game-area"></div>
+      </div>
+
     </div>
 
-    <div class="stat-row">
-      <span class="stat-label">🥕 포만감</span>
-      <div class="bar-bg">
-        <div class="bar-fill" id="bar-hunger" style="width:100%"></div>
-      </div>
-      <span class="stat-val" id="val-hunger">100%</span>
-    </div>
+  </div><!-- /minigame-screen -->
 
-    <div class="stat-row">
-      <span class="stat-label">❤️ 건강도</span>
-      <div class="bar-bg">
-        <div class="bar-fill" id="bar-health" style="width:100%"></div>
-      </div>
-      <span class="stat-val" id="val-health">100%</span>
-    </div>
-
-  </section>
-
-  <!-- ── 경고 메시지 ── -->
-  <p id="warn-msg"></p>
-
-  <!-- ── 버튼 ── -->
-  <section class="btn-box">
-    <button class="btn btn-feed"     onclick="actionFeed()">🥕 밥 주기</button>
-    <button class="btn btn-clean"    onclick="actionClean()">🛁 씻기기</button>
-    <button class="btn btn-play"     onclick="actionPlay()">🎮 놀아주기</button>
-    <button class="btn btn-medicine" onclick="actionMedicine()">💊 약 먹이기</button>
-  </section>
-
-  <!-- ── 액션 결과 메시지 ── -->
-  <p id="action-msg"></p>
 
   <script src="game.js"></script>
+  <script src="minigame.js"></script>
 </body>
 </html>
