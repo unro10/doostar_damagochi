@@ -1,194 +1,115 @@
-/* ══════════════════════════════
-   기본 리셋 & 폰트
-══════════════════════════════ */
-
+/* ── 기본 리셋 ── */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
-  background: linear-gradient(160deg, #f0e6ff 0%, #fde8f0 100%);
-  min-height: 100vh;
+  font-family: "Noto Sans KR", "맑은 고딕", sans-serif;
+  background: #FFF8F0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 100vh;
   padding-bottom: 40px;
 }
 
-/* ══════════════════════════════
-   상단 캐시 바
-══════════════════════════════ */
-
-.cash-bar {
+/* ── 타이틀 ── */
+header {
   width: 100%;
-  max-width: 480px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  padding: 10px 18px;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(180,140,220,0.25);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.cash-label {
-  font-size: 0.85rem;
-  color: #888;
-}
-
-#cash-display {
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: #7B52C1;
-}
-
-.cash-unit {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #7B52C1;
-}
-
-/* 캐시 획득 팝업 */
-.cash-pop {
-  position: fixed;
-  font-size: 1rem;
-  font-weight: 900;
-  color: #2E7D32;
-  pointer-events: none;
-  z-index: 999;
-  animation: cashFloat 1.2s ease forwards;
-}
-
-@keyframes cashFloat {
-  0%   { opacity: 1; transform: translateY(0);    }
-  100% { opacity: 0; transform: translateY(-40px); }
-}
-
-/* ══════════════════════════════
-   메인 컨테이너
-══════════════════════════════ */
-
-.container {
-  width: 100%;
-  max-width: 480px;
-  padding: 20px 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-/* ── 단계 레이블 */
-.stage-label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #7B52C1;
-  background: rgba(255,255,255,0.65);
-  border-radius: 100px;
-  padding: 5px 16px;
+  background: linear-gradient(135deg, #FF8C69, #FFB347);
+  color: white;
   text-align: center;
-  letter-spacing: 0.02em;
+  padding: 18px 0 12px;
+  box-shadow: 0 4px 12px rgba(255, 140, 105, 0.4);
 }
 
-/* ══════════════════════════════
-   햄스터 이미지 영역
-══════════════════════════════ */
+header h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
 
+#stage-label {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* ── 햄스터 이미지 박스 ── */
 .hamster-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  margin: 24px auto 0;
+  background: #FFF0E0;
+  border: 3px solid #FFCBA4;
+  border-radius: 24px;
+  width: 300px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(255, 179, 71, 0.25);
 }
 
 #hamster-img {
-  width: 160px;
-  height: 160px;
+  width: 220px;
+  height: 220px;
   object-fit: contain;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  filter: drop-shadow(0 6px 18px rgba(123,82,193,0.25));
+  border-radius: 16px;
+
+  /* 상태 전환 애니메이션 */
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.state-msg {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #555;
-  text-align: center;
-}
-
-/* 바운스 애니메이션 */
-.hamster-box.bouncing #hamster-img {
-  animation: bounce 0.4s ease 3;
-}
-
+/* 이미지 흔들기 애니메이션 */
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  40%       { transform: translateY(-18px); }
+  50%       { transform: translateY(-8px); }
 }
 
-/* ══════════════════════════════
-   경고 메시지
-══════════════════════════════ */
+.hamster-box.bouncing #hamster-img {
+  animation: bounce 0.5s ease 3;
+}
 
-.warn-msg {
-  width: 100%;
-  font-size: 0.82rem;
+#state-msg {
+  margin-top: 12px;
+  font-size: 1rem;
   font-weight: 700;
-  color: #C62828;
-  background: rgba(255,235,238,0.85);
-  border-radius: 12px;
-  padding: 8px 14px;
-  line-height: 1.7;
-  white-space: pre-line;
-  min-height: 0;
-  text-align: center;
-  border: 1px solid rgba(229,115,115,0.4);
+  color: #E05050;
+  min-height: 1.4em;
 }
 
-.warn-msg:empty {
-  display: none;
-}
-
-/* ══════════════════════════════
-   스탯 바
-══════════════════════════════ */
-
-.stats {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: rgba(255,255,255,0.65);
+/* ── 상태바 영역 ── */
+.stats-box {
+  width: 340px;
+  margin: 20px auto 0;
+  background: white;
   border-radius: 18px;
-  padding: 16px 18px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  padding: 18px 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
 .stat-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  margin-bottom: 14px;
+  gap: 8px;
+}
+
+.stat-row:last-child {
+  margin-bottom: 0;
 }
 
 .stat-label {
-  width: 58px;
-  font-size: 0.82rem;
+  width: 72px;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #555;
   flex-shrink: 0;
 }
 
-.bar-track {
+.bar-bg {
   flex: 1;
-  height: 12px;
-  background: #E8E0F5;
+  height: 18px;
+  background: #E8E8E8;
   border-radius: 100px;
   overflow: hidden;
 }
@@ -196,759 +117,104 @@ body {
 .bar-fill {
   height: 100%;
   border-radius: 100px;
-  width: 100%;
-  transition: width 0.5s ease, background 0.4s ease;
+  transition: width 0.5s ease, background-color 0.5s ease;
 }
 
-.bar-fill.good   { background: linear-gradient(90deg, #7B52C1, #B084FF); }
-.bar-fill.normal { background: linear-gradient(90deg, #F4A322, #FFD166); }
-.bar-fill.bad    { background: linear-gradient(90deg, #E53935, #FF6F60); }
+/* 바 색상 - JS에서 클래스로 제어 */
+.bar-fill.good   { background: linear-gradient(90deg, #6EC6FF, #3FA9F5); }
+.bar-fill.normal { background: linear-gradient(90deg, #FFD700, #FFA500); }
+.bar-fill.bad    { background: linear-gradient(90deg, #FF8C8C, #FF4444); }
 
 .stat-val {
   width: 38px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #888;
+  font-size: 0.82rem;
+  color: #777;
   text-align: right;
   flex-shrink: 0;
 }
 
-/* ══════════════════════════════
-   액션 메시지
-══════════════════════════════ */
-
-.action-msg {
+/* ── 경고 메시지 ── */
+#warn-msg {
+  width: 340px;
+  margin: 14px auto 0;
+  min-height: 1.4em;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #4A148C;
-  background: rgba(255,255,255,0.75);
-  border-radius: 12px;
-  padding: 8px 16px;
-  text-align: center;
-  min-height: 36px;
-  transition: opacity 0.4s ease;
-  width: 100%;
-}
-
-.action-msg.hidden {
-  opacity: 0;
-}
-
-/* ══════════════════════════════
-   액션 버튼
-══════════════════════════════ */
-
-.action-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  width: 100%;
-}
-
-.action-btn {
-  flex: 1 1 calc(33% - 10px);
-  min-width: 90px;
-  max-width: 140px;
-  background: white;
-  border: 2px solid rgba(123,82,193,0.25);
-  border-radius: 16px;
-  padding: 12px 6px;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #4A148C;
-  cursor: pointer;
-  text-align: center;
-  line-height: 1.4;
-  transition: all 0.18s ease;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-}
-
-.action-btn:hover {
-  background: #7B52C1;
-  color: white;
-  border-color: #7B52C1;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(123,82,193,0.3);
-}
-
-.action-btn:active {
-  transform: translateY(0);
-}
-
-.action-btn small {
-  font-size: 0.72rem;
-  opacity: 0.75;
-}
-
-/* ══════════════════════════════
-   미니게임 화면
-══════════════════════════════ */
-
-#minigame-screen {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(160deg, #1a0a2e 0%, #2d1b4e 100%);
-  z-index: 800;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 24px 18px;
-  overflow-y: auto;
-  color: white;
-}
-
-#minigame-screen.hidden { display: none; }
-
-/* ── 선택 화면 */
-#mg-select h2 {
-  font-size: 1.5rem;
-  font-weight: 900;
-  text-align: center;
-  margin-bottom: 6px;
-}
-
-.mg-desc {
-  font-size: 0.85rem;
-  color: #CCC;
-  text-align: center;
-  margin-bottom: 22px;
-}
-
-.mg-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 22px;
-}
-
-.mg-card {
-  background: rgba(255,255,255,0.08);
-  border: 2px solid rgba(255,255,255,0.18);
-  border-radius: 18px;
-  padding: 18px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  color: white;
-}
-
-.mg-card:hover {
-  background: rgba(123,82,193,0.5);
-  border-color: #B084FF;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(123,82,193,0.4);
-}
-
-.mg-icon   { font-size: 2.2rem; }
-.mg-name   { font-size: 0.9rem;  font-weight: 800; }
-.mg-reward { font-size: 0.75rem; color: #FFD700; font-weight: 700; }
-
-.mg-back-btn {
-  background: rgba(255,255,255,0.12);
-  border: 1.5px solid rgba(255,255,255,0.25);
-  border-radius: 100px;
-  padding: 10px 28px;
-  color: white;
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.mg-back-btn:hover { background: rgba(255,255,255,0.22); }
-
-/* ── 플레이 영역 */
-#mg-play {
-  width: 100%;
-  max-width: 400px;
-}
-
-#mg-play.hidden { display: none; }
-
-/* ── 공통 게임 카드 */
-.mg-game-wrap {
-  background: rgba(255,255,255,0.07);
-  border: 1.5px solid rgba(255,255,255,0.18);
-  border-radius: 22px;
-  padding: 24px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  color: white;
-  text-align: center;
-}
-
-.mg-game-title {
-  font-size: 1.2rem;
-  font-weight: 900;
-}
-
-.mg-game-desc {
-  font-size: 0.82rem;
-  color: #CCC;
-  line-height: 1.5;
-}
-
-.mg-input {
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 2px solid rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.1);
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-align: center;
-  outline: none;
-}
-
-.mg-input::placeholder { color: rgba(255,255,255,0.45); }
-.mg-input:focus        { border-color: #B084FF; }
-
-.mg-btn {
-  width: 100%;
-  padding: 13px;
-  border-radius: 14px;
-  border: none;
-  background: linear-gradient(135deg, #7B52C1, #B084FF);
-  color: white;
-  font-size: 1rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.15s;
-}
-
-.mg-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
-.mg-btn:active { transform: translateY(0); }
-
-.mg-hint {
-  font-size: 0.88rem;
-  color: #FFD700;
-  font-weight: 700;
-  min-height: 22px;
-}
-
-.mg-result {
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.6;
-}
-
-.mg-result.win  { color: #69F0AE; }
-.mg-result.lose { color: #FF6F60; }
-
-/* ── RPS 버튼 */
-.rps-btns {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.rps-btn {
-  background: rgba(255,255,255,0.1);
-  border: 2px solid rgba(255,255,255,0.25);
-  border-radius: 16px;
-  padding: 14px 20px;
-  font-size: 2rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  color: white;
-}
-
-.rps-btn:hover {
-  background: rgba(123,82,193,0.5);
-  border-color: #B084FF;
-  transform: scale(1.1);
-}
-
-/* ── 슬롯 */
-.slot-display {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.slot-reel {
-  width: 64px;
-  height: 64px;
-  background: rgba(255,255,255,0.12);
-  border: 2px solid rgba(255,255,255,0.25);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.2rem;
-  transition: transform 0.1s ease;
-}
-
-.slot-reel.spinning {
-  animation: slotSpin 0.1s linear infinite;
-}
-
-@keyframes slotSpin {
-  0%   { transform: scaleY(1);    }
-  50%  { transform: scaleY(0.6);  }
-  100% { transform: scaleY(1);    }
-}
-
-/* ── 기억력 게임 */
-.memory-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  width: 100%;
-}
-
-.mem-card {
-  aspect-ratio: 1;
-  background: rgba(255,255,255,0.12);
-  border: 2px solid rgba(255,255,255,0.25);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-
-.mem-card:hover:not(.flipped):not(.matched) {
-  background: rgba(255,255,255,0.2);
-}
-
-.mem-card.flipped,
-.mem-card.matched {
-  background: rgba(123,82,193,0.4);
-  border-color: #B084FF;
-}
-
-.mem-card.matched {
-  background: rgba(105,240,174,0.25);
-  border-color: #69F0AE;
-  pointer-events: none;
-}
-
-/* ══════════════════════════════
-   출석 보상 팝업
-══════════════════════════════ */
-
-#attend-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 1200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-#attend-card {
-  background: white;
-  border-radius: 24px;
-  padding: 24px 20px;
-  width: 100%;
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.25);
-  animation: popIn 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
-}
-
-@keyframes popIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
-}
-
-#attend-title {
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #333;
-}
-
-#attend-streak {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #E65100;
-}
-
-/* ── 달력 그리드 */
-#attend-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  width: 100%;
-}
-
-.attend-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border-radius: 10px;
-  padding: 6px 2px;
-  font-size: 0.68rem;
-  gap: 2px;
-}
-
-.attend-day {
-  font-weight: 800;
-  color: #555;
-}
-
-.attend-cash {
-  font-weight: 700;
-  color: #2E7D32;
-}
-
-.attend-bonus {
-  font-size: 0.58rem;
-  color: #E65100;
-  font-weight: 700;
-  text-align: center;
-  min-height: 10px;
-}
-
-.attend-cell.done {
-  background: #E8F5E9;
-  border: 1.5px solid #A5D6A7;
-}
-
-.attend-cell.today {
-  background: #FFF9C4;
-  border: 2px solid #FFD700;
-  box-shadow: 0 0 0 3px rgba(255,215,0,0.3);
-}
-
-.attend-cell.future {
-  background: #F5F5F5;
-  border: 1.5px solid #E0E0E0;
-  opacity: 0.6;
-}
-
-/* ── 요약 */
-#attend-summary {
+  color: #CC4400;
   text-align: center;
   line-height: 1.7;
 }
 
-#attend-summary p {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #333;
-}
-
-#attend-close-btn {
-  width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg, #7B52C1, #B084FF);
-  border: none;
-  border-radius: 14px;
-  color: white;
-  font-size: 1rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-#attend-close-btn:hover { opacity: 0.88; }
-
-/* ══════════════════════════════
-   🏆 업적 토스트 알림
-══════════════════════════════ */
-
-.ach-toast {
-  position: fixed;
-  bottom: 24px;
-  right: -320px;
-  width: 280px;
-  background: #FFFAF0;
-  border: 2px solid #FFD700;
-  border-radius: 18px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
+/* ── 버튼 영역 ── */
+.btn-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
-  z-index: 2000;
-  transition: right 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
+  width: 340px;
+  margin: 20px auto 0;
 }
 
-.ach-toast.show { right: 16px; }
-.ach-toast.hide { right: -320px; transition: right 0.4s ease-in; }
-
-.ach-toast-icon {
-  font-size: 2.2rem;
-  flex-shrink: 0;
-}
-
-.ach-toast-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ach-toast-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #B8860B;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.ach-toast-name {
-  font-size: 0.95rem;
-  font-weight: 900;
-  color: #333;
-}
-
-.ach-toast-desc {
-  font-size: 0.75rem;
-  color: #666;
-  line-height: 1.3;
-}
-
-.ach-toast-cash {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #2E7D32;
-  margin-top: 2px;
-}
-
-/* ══════════════════════════════
-   🏆 업적 패널 팝업
-══════════════════════════════ */
-
-#ach-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 1500;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0;
-}
-
-#ach-panel {
-  background: #FAFAFA;
-  border-radius: 28px 28px 0 0;
-  width: 100%;
-  max-width: 480px;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: slideUp 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* ── 헤더 */
-#ach-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 20px 12px;
-  border-bottom: 1px solid #EEE;
-  flex-shrink: 0;
-}
-
-#ach-header h2 {
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #333;
-}
-
-#ach-close {
-  background: #EEE;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
+.btn {
+  padding: 14px 0;
   font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #555;
-  transition: background 0.15s;
-}
-
-#ach-close:hover { background: #DDD; }
-
-/* ── 달성 현황 바 */
-#ach-progress-wrap {
-  padding: 12px 20px;
-  flex-shrink: 0;
-}
-
-#ach-progress-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
   font-weight: 700;
-  color: #555;
-  margin-bottom: 6px;
-}
-
-#ach-progress-track {
-  width: 100%;
-  height: 10px;
-  background: #E0E0E0;
-  border-radius: 100px;
-  overflow: hidden;
-}
-
-#ach-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #7B52C1, #FFD700);
-  border-radius: 100px;
-  transition: width 0.6s ease;
-}
-
-/* ── 탭 바 */
-#ach-tab-bar {
-  display: flex;
-  gap: 6px;
-  padding: 0 16px 10px;
-  overflow-x: auto;
-  flex-shrink: 0;
-  scrollbar-width: none;
-}
-
-#ach-tab-bar::-webkit-scrollbar { display: none; }
-
-.ach-tab {
-  flex-shrink: 0;
-  padding: 6px 14px;
-  border: 2px solid #E0E0E0;
-  border-radius: 100px;
-  background: white;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #888;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.ach-tab:hover  { border-color: #BBB; color: #555; }
-
-.ach-tab.active {
-  background: #7B52C1;
-  border-color: #7B52C1;
   color: white;
-}
-
-/* ── 카드 목록 */
-#ach-tab-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 16px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: #DDD transparent;
-}
-
-/* ── 업적 카드 */
-.ach-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: white;
-  border: 2px solid #E8E8E8;
+  border: none;
   border-radius: 16px;
-  padding: 14px 16px;
-  position: relative;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
 }
 
-.ach-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
 }
 
-.ach-card.done {
-  background: linear-gradient(135deg, #FFFDE7, #FFF9C4);
-  border-color: #FFD700;
+.btn:active {
+  transform: translateY(0px);
+  opacity: 0.85;
 }
 
-.ach-card-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-  width: 44px;
+.btn-feed     { background: linear-gradient(135deg, #FFB347, #FF8C00); }
+.btn-clean    { background: linear-gradient(135deg, #6EC6FF, #2196F3); }
+.btn-play     { background: linear-gradient(135deg, #B39DDB, #7B52C1); }
+.btn-medicine { background: linear-gradient(135deg, #77DD77, #2E9E2E); }
+
+/* ── 액션 결과 메시지 ── */
+#action-msg {
+  margin-top: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #555;
+  min-height: 1.4em;
   text-align: center;
+
+  /* 페이드 인/아웃 */
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 
-.ach-card:not(.done) .ach-card-icon {
-  filter: grayscale(1);
-  opacity: 0.45;
+#action-msg.hidden {
+  opacity: 0;
 }
 
-.ach-card-body {
-  flex: 1;
-  min-width: 0;
+/* ── 반응형 ── */
+@media (max-width: 400px) {
+  .hamster-box,
+  .stats-box,
+  #warn-msg,
+  .btn-box {
+    width: 92vw;
+  }
+
+  .hamster-box {
+    padding: 14px;
+  }
+
+  #hamster-img {
+    width: 160px;
+    height: 160px;
+  }
 }
-
-.ach-card-name {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #333;
-  margin-bottom: 2px;
-}
-
-.ach-card:not(.done) .ach-card-name { color: #888; }
-
-.ach-card-desc {
-  font-size: 0.78rem;
-  color: #777;
-  line-height: 1.35;
-}
-
-.ach-card-reward {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #2E7D32;
-  margin-top: 4px;
-}
-
-.ach-card:not(.done) .ach-card-reward { color: #AAA; }
-
-.ach-card-badge {
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 100px;
-  background: #F0F0F0;
-  color: #AAA;
-  white-space: nowrap;
-}
-
-.ach-card.done .ach-card-badge {
-  background: #E8F5E9;
-  color: #2E7D32;
-}
-
-/* ══════════════════════════════
-   유틸
-══════════════════════════════ */
-
-.hidden { display: none !important; }
